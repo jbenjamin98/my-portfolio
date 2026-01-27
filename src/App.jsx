@@ -339,7 +339,12 @@ export default function Portfolio() {
   const [activeTab, setActiveTab] = useState('experience');
   const [expandedJob, setExpandedJob] = useState(1);
   const [activeModal, setActiveModal] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
 
   const toggleJob = (id) => setExpandedJob(expandedJob === id ? null : id);
 
