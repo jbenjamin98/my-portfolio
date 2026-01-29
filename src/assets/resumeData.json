@@ -1,0 +1,147 @@
+{
+  "personalInfo": {
+    "name": "Jacob Benjamin",
+    "title": "Technical Program Manager & Low-Code Expert",
+    "location": "Marshall, VA",
+    "phone": "(540) 270-3664",
+    "email": "jacobbrianbenjamin@gmail.com",
+    "summary": "Technical Program Manager & Low-Code Expert holding PMP, Active Secret Clearance, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142k labor cost reduction, a ~$2M profit increase, and significant NPS improvements.",
+    "expertise": [
+      "Technical Program Management", "Agile SDLC", "Digital Modernization", "Enterprise Low-Code Strategy",
+      "Solution Architecture", "Strategic Roadmap Planning", "Process Reengineering", "Risk & Conflict Management",
+      "OCM", "Requirements Engineering"
+    ]
+  },
+  "experience": [
+    {
+      "id": 1,
+      "company": "MANTECH (formerly Definitive Logic)",
+      "role": "Program Manager",
+      "period": "Oct 2022 - Present",
+      "type": "Remote",
+      "project": "Army – Resource Managers Workspace (RMW) & IRIT",
+      "hasCaseStudy": true, 
+      "caseStudyData": {
+        "title": "Project Recovery: Army RMW",
+        "challenge": "Inherited a $70M project with significant post-deployment issues, low user adoption, and looming budget cuts.",
+        "strategy": "Implemented strict Agile controls, transparent OCM protocols, and strategic OneStream deployment across 26 commands.",
+        "outcome": "NPS score improved from Detractor to Promoter. Identified legacy divestiture opportunities. Increased profitability by $2M via optimization."
+      },
+      "details": [
+        "Leads 20+ team executing $70M Army RMW/IRIT projects.",
+        "Strategic deployment of OneStream PPBE to 26 commands.",
+        "Rescued failing project; NPS from Detractor to Promoter.",
+        "Navigated budget reductions to minimize impact and increased profitability by +$2M."
+      ]
+    },
+    {
+      "id": 2,
+      "company": "MANTECH (formerly Definitive Logic)",
+      "role": "Lead Software Engineer",
+      "period": "Oct 2022 - Dec 2024",
+      "type": "Remote",
+      "project": "NDU Connect",
+      "hasCaseStudy": true,
+      "caseStudyData": {
+        "title": "Digital Transformation: NDU Connect",
+        "challenge": "Manual paper processing (DD 2875 forms) causing massive delays and an 11% data entry error rate.",
+        "strategy": "Architected a Salesforce + Docusign automated workflow for account creation and academic support.",
+        "outcome": "1,450 labor hours saved annually ($142k equivalent). 11% error reduction. 30% faster system load times."
+      },
+      "details": [
+        "Deputy PM & Scrum Master for NDU Connect.",
+        "Configured Salesforce/Docusign, saving $142k/yr.",
+        "Reduced system load times by ~30% for high-volume operations.",
+        "Improved Section 508 compliance."
+      ]
+    },
+    {
+      "id": 3,
+      "company": "Nuvitek",
+      "role": "Appian Developer",
+      "period": "Aug 2021 - Oct 2022",
+      "type": "Remote",
+      "project": "NOAA & Dept of Labor",
+      "details": [
+        "Built joint enforcement case mgmt system for NOAA.",
+        "Dynamic XML PDF generation for 60+ docs.",
+        "Migrated DOL Trade Adjustment data."
+      ]
+    },
+    {
+      "id": 4,
+      "company": "REI Systems",
+      "role": "Tech Consultant",
+      "period": "Aug 2020 - Aug 2021",
+      "type": "Remote",
+      "project": "OCC",
+      "details": [
+        "Led Appian prototyping teams.",
+        "Integrated Google Cloud AI (Vision, NLP).",
+        "Database developer on 3 concurrent projects."
+      ]
+    },
+    {
+      "id": 5,
+      "company": "Groundswell",
+      "role": "Appian Consultant",
+      "period": "Jul 2019 - Aug 2020",
+      "type": "Tysons, VA",
+      "project": "CMS",
+      "details": [
+        "Designed BPM solutions for CMS.",
+        "Created UX prototypes.",
+        "Researched enterprise frameworks."
+      ]
+    }
+  ],
+  "education": [
+    { "school": "University of Maryland Global Campus", "degree": "M.S. IT: Systems Engineering", "date": "Aug 2022" },
+    { "school": "Virginia Tech", "degree": "B.S. Psychology", "date": "Jul 2019" }
+  ],
+  "volunteer": {
+    "org": "FIRST Chesapeake & FIRST Robotics Team 1731",
+    "role": "Volunteer Coordinator & Mentor",
+    "period": "Nov 2022 - Mar 2025",
+    "details": [
+      "Lead presenter at 2024 Mentors Conference on adapting Agile Scrum.",
+      "Assisted with recruiting volunteers for competitions in VA, MD, and DC.",
+      "Facilitated cybersecurity education for students via games.",
+      "Mentored 15+ high school students in Agile and systems engineering.",
+      "Supported team in winning 2023 & 2024 Championships."
+    ]
+  },
+  "affiliations": [
+    "Eagle Scout, Boy Scouts of America",
+    "Member, Alpha Phi Omega (National Service Fraternity)",
+    "Member, Phi Theta Kappa Honor Society"
+  ],
+  "certifications": [
+    { "name": "PMP", "id": "PMI", "type": "pmi" },
+    { "name": "Appian Lead Dev", "id": "ACLD", "type": "appian" },
+    { "name": "Security+", "id": "SEC+", "type": "security" },
+    { "name": "Lean Six Sigma Black Belt", "id": "LSSBB", "type": "lean" },
+    { "name": "CSM & PSM", "id": "CSM", "type": "scrum" },
+    { "name": "Salesforce Admin", "id": "SF-ADM", "type": "salesforce" },
+    { "name": "Docusign IAM", "id": "DOCU", "type": "docu" },
+    { "name": "Azure Fundamentals", "id": "AZURE", "type": "microsoft" },
+    { "name": "FinOps Practitioner", "id": "FIN", "type": "finance" },
+    { "name": "MIT GenAI", "id": "MIT", "type": "ai" }
+  ],
+  "keyMetrics": [
+    { "label": "Program Value", "value": "$70M", "icon": "TrendingUp", "color": "text-emerald-500" },
+    { "label": "Annual Savings", "value": "$142k", "icon": "FileText", "color": "text-blue-500" },
+    { "label": "Hours Saved/Yr", "value": "1,450", "icon": "Activity", "color": "text-amber-500" },
+    { "label": "Users Supported", "value": "10k+", "icon": "Users", "color": "text-purple-500" }
+  ],
+  "skillCategories": {
+    "Platforms & Apps": ["Appian", "Salesforce", "OneStream", "Microsoft Power BI", "Docusign"],
+    "Databases": ["MySQL", "MariaDB", "Oracle Database", "Microsoft SQL Server"],
+    "Management Tools": ["Jira", "Azure DevOps", "Asana", "IBM Jazz", "MS Project", "Visio"]
+  },
+  "testimonials": [
+    { "source": "Army Stakeholder", "text": "Successfully executed $70M projects by continuously driving process improvements." },
+    { "source": "NDU Leadership", "text": "Decreased data entry errors by ~11% via full digitalization." },
+    { "source": "Senior Director", "text": "Rescued a failing project, increasing NPS from Detractor to Promoter." }
+  ]
+}

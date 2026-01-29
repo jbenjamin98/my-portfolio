@@ -3,258 +3,39 @@ import {
   Mail, Phone, MapPin, Briefcase, User, Moon, Sun, 
   ChevronDown, ChevronUp, Terminal as TerminalIcon, Cpu, Shield, Users, 
   Activity, Calendar, Cloud, FileText, Hexagon, Monitor, 
-  TrendingUp, Database, BookOpen, Award, Zap, X, Target,
-  CheckCircle2, ArrowRight, FileBarChart, Send, 
+  TrendingUp, Database, BookOpen, Award, Zap, Target,
+  CheckCircle2, Send, 
   ClipboardList, Palette
 } from 'lucide-react';
+import resumeData from './assets/resumeData.json';
 
 // --- RESUME DATA ---
 
-const personalInfo = {
-  name: "Jacob Benjamin",
-  title: "Technical Program Manager & Low-Code Expert",
-  location: "Marshall, VA",
-  phone: "(540) 270-3664",
-  email: "jacobbrianbenjamin@gmail.com",
-  summary: "Technical Program Manager & Low-Code Expert holding PMP, Active Secret Clearance, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142k labor cost reduction, a ~$2M profit increase, and significant NPS improvements.",
-  expertise: [
-    "Technical Program Management", "Agile SDLC", "Digital Modernization", "Enterprise Low-Code Strategy",
-    "Solution Architecture", "Strategic Roadmap Planning", "Process Reengineering", "Risk & Conflict Management",
-    "OCM", "Requirements Engineering"
-  ]
-};
+const personalInfo = resumeData.personalInfo;
 
-const experience = [
-  {
-    id: 1,
-    company: "MANTECH (formerly Definitive Logic)",
-    role: "Program Manager",
-    period: "Oct 2022 - Present",
-    type: "Remote",
-    project: "Army – Resource Managers Workspace (RMW) & IRIT",
-    hasCaseStudy: true, 
-    caseStudyData: {
-      title: "Project Recovery: Army RMW",
-      challenge: "Inherited a $70M project with significant post-deployment issues, low user adoption, and looming budget cuts.",
-      strategy: "Implemented strict Agile controls, transparent OCM protocols, and strategic OneStream deployment across 26 commands.",
-      outcome: "NPS score improved from Detractor to Promoter. Identified legacy divestiture opportunities. Increased profitability by $2M via optimization."
-    },
-    details: [
-      "Leads 20+ team executing $70M Army RMW/IRIT projects.",
-      "Strategic deployment of OneStream PPBE to 26 commands.",
-      "Rescued failing project; NPS from Detractor to Promoter.",
-      "Navigated budget reductions to minimize impact and increased profitability by +$2M."
-    ]
-  },
-  {
-    id: 2,
-    company: "MANTECH (formerly Definitive Logic)",
-    role: "Lead Software Engineer",
-    period: "Oct 2022 - Dec 2024",
-    type: "Remote",
-    project: "NDU Connect",
-    hasCaseStudy: true,
-    caseStudyData: {
-      title: "Digital Transformation: NDU Connect",
-      challenge: "Manual paper processing (DD 2875 forms) causing massive delays and an 11% data entry error rate.",
-      strategy: "Architected a Salesforce + Docusign automated workflow for account creation and academic support.",
-      outcome: "1,450 labor hours saved annually ($142k equivalent). 11% error reduction. 30% faster system load times."
-    },
-    details: [
-      "Deputy PM & Scrum Master for NDU Connect.",
-      "Configured Salesforce/Docusign, saving $142k/yr.",
-      "Reduced system load times by ~30% for high-volume operations.",
-      "Improved Section 508 compliance."
-    ]
-  },
-  {
-    id: 3,
-    company: "Nuvitek",
-    role: "Appian Developer",
-    period: "Aug 2021 - Oct 2022",
-    type: "Remote",
-    project: "NOAA & Dept of Labor",
-    details: [
-      "Built joint enforcement case mgmt system for NOAA.",
-      "Dynamic XML PDF generation for 60+ docs.",
-      "Migrated DOL Trade Adjustment data."
-    ]
-  },
-  {
-    id: 4,
-    company: "REI Systems",
-    role: "Tech Consultant",
-    period: "Aug 2020 - Aug 2021",
-    type: "Remote",
-    project: "OCC",
-    details: [
-      "Led Appian prototyping teams.",
-      "Integrated Google Cloud AI (Vision, NLP).",
-      "Database developer on 3 concurrent projects."
-    ]
-  },
-  {
-    id: 5,
-    company: "Groundswell",
-    role: "Appian Consultant",
-    period: "Jul 2019 - Aug 2020",
-    type: "Tysons, VA",
-    project: "CMS",
-    details: [
-      "Designed BPM solutions for CMS.",
-      "Created UX prototypes.",
-      "Researched enterprise frameworks."
-    ]
-  }
-];
+const experience = resumeData.experience;
 
-const education = [
-  { school: "University of Maryland Global Campus", degree: "M.S. IT: Systems Engineering", date: "Aug 2022" },
-  { school: "Virginia Tech", degree: "B.S. Psychology", date: "Jul 2019" }
-];
+const education = resumeData.education;
 
-const volunteer = {
-  org: "FIRST Chesapeake & FIRST Robotics Team 1731",
-  role: "Volunteer Coordinator & Mentor",
-  period: "Nov 2022 - Mar 2025",
-  details: [
-    "Lead presenter at 2024 Mentors Conference on adapting Agile Scrum.",
-    "Assisted with recruiting volunteers for competitions in VA, MD, and DC.",
-    "Facilitated cybersecurity education for students via games.",
-    "Mentored 15+ high school students in Agile and systems engineering.",
-    "Supported team in winning 2023 & 2024 Championships."
-  ]
-};
+const volunteer = resumeData.volunteer;
 
-const affiliations = [
-  "Eagle Scout, Boy Scouts of America",
-  "Member, Alpha Phi Omega (National Service Fraternity)",
-  "Member, Phi Theta Kappa Honor Society"
-];
+const affiliations = resumeData.affiliations;
 
-const certifications = [
-  { name: "PMP", id: "PMI", type: "pmi" },
-  { name: "Appian Lead Dev", id: "ACLD", type: "appian" },
-  { name: "Security+", id: "SEC+", type: "security" },
-  { name: "Lean Six Sigma Black Belt", id: "LSSBB", type: "lean" },
-  { name: "CSM & PSM", id: "CSM", type: "scrum" },
-  { name: "Salesforce Admin", id: "SF-ADM", type: "salesforce" },
-  { name: "Docusign IAM", id: "DOCU", type: "docu" },
-  { name: "Azure Fundamentals", id: "AZURE", type: "microsoft" },
-  { name: "FinOps Practitioner", id: "FIN", type: "finance" },
-  { name: "MIT GenAI", id: "MIT", type: "ai" },
-];
+const certifications = resumeData.certifications;
 
-const keyMetrics = [
-  { label: "Program Value", value: "$70M", icon: TrendingUp, color: "text-emerald-500" },
-  { label: "Annual Savings", value: "$142k", icon: FileText, color: "text-blue-500" },
-  { label: "Hours Saved/Yr", value: "1,450", icon: Activity, color: "text-amber-500" },
-  { label: "Users Supported", value: "10k+", icon: Users, color: "text-purple-500" },
-];
+const keyMetrics = resumeData.keyMetrics.map(item => ({
+  ...item,
+  icon: { TrendingUp, FileText, Activity, Users }[item.icon]
+}));
 
-const skillCategories = {
-  "Platforms & Apps": ["Appian", "Salesforce", "OneStream", "Microsoft Power BI", "Docusign"],
-  "Databases": ["MySQL", "MariaDB", "Oracle Database", "Microsoft SQL Server"],
-  "Management Tools": ["Jira", "Azure DevOps", "Asana", "IBM Jazz", "MS Project", "Visio"]
-};
+const skillCategories = resumeData.skillCategories;
 
-const testimonials = [
-  { source: "Army Stakeholder", text: "Successfully executed $70M projects by continuously driving process improvements." },
-  { source: "NDU Leadership", text: "Decreased data entry errors by ~11% via full digitalization." },
-  { source: "Senior Director", text: "Rescued a failing project, increasing NPS from Detractor to Promoter." }
-];
+const testimonials = resumeData.testimonials;
 
 // --- HELPER COMPONENTS ---
 
 const AnimatedCounter = ({ value }) => {
   return <span>{value}</span>;
-};
-
-// Architecture Diagram (Kept visual but simplified style)
-const ArchitectureBlueprint = () => {
-  return (
-    <div className="w-full h-48 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 relative overflow-hidden flex items-center justify-center select-none opacity-80 mt-4 bg-slate-50 dark:bg-slate-900/50">
-      <div className="absolute top-2 left-2 text-[10px] font-mono opacity-50 text-slate-500">ARCH_DIAGRAM_V1.4</div>
-      <svg width="100%" height="100%" viewBox="0 0 600 200">
-        <path d="M 100 100 L 250 100" className="stroke-slate-400 dark:stroke-slate-600" strokeWidth="2" strokeDasharray="5,5" />
-        <path d="M 350 100 L 500 100" className="stroke-slate-400 dark:stroke-slate-600" strokeWidth="2" strokeDasharray="5,5" />
-        <circle r="4" className="fill-blue-500">
-          <animateMotion dur="2s" repeatCount="indefinite" path="M 100 100 L 250 100" />
-        </circle>
-        <circle r="4" className="fill-emerald-500">
-          <animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M 500 100 L 350 100" />
-        </circle>
-        <g transform="translate(50, 75)">
-          <rect width="100" height="50" rx="8" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
-          <text x="50" y="30" textAnchor="middle" className="fill-slate-600 dark:fill-slate-400" fontSize="12" fontWeight="bold">Salesforce</text>
-        </g>
-        <g transform="translate(250, 75)">
-          <rect width="100" height="50" rx="8" fill="none" className="stroke-blue-500" strokeWidth="2" />
-          <text x="50" y="30" textAnchor="middle" className="fill-blue-600 dark:fill-blue-400" fontSize="12" fontWeight="bold">Appian</text>
-        </g>
-        <g transform="translate(450, 75)">
-          <rect width="100" height="50" rx="8" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
-          <text x="50" y="30" textAnchor="middle" className="fill-slate-600 dark:fill-slate-400" fontSize="12" fontWeight="bold">Docusign</text>
-        </g>
-      </svg>
-    </div>
-  );
-};
-
-// Modals
-const CaseStudyModal = ({ project, onClose }) => {
-  const [activeTab, setActiveTab] = useState('challenge');
-  if (!project) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-700">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800">
-          <div>
-            <h2 className="font-bold text-lg text-slate-900 dark:text-white">{project.caseStudyData.title}</h2>
-            <span className="text-xs text-slate-500 uppercase">CASE STUDY</span>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X size={20} /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700 pb-1">
-            {['challenge', 'strategy', 'outcome'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-2 text-sm font-bold uppercase transition-colors ${activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}>{tab}</button>
-            ))}
-          </div>
-          <div className="min-h-[150px] text-slate-700 dark:text-slate-300">
-            {activeTab === 'challenge' && (
-              <div className="animate-fadeIn">
-                <p className="text-lg leading-relaxed">{project.caseStudyData.challenge}</p>
-                {project.project.includes("Army") && (
-                   <div className="mt-6 p-4 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                      <h4 className="text-sm font-bold mb-2 text-red-700 dark:text-red-400">Initial Status</h4>
-                      <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                         <div className="h-full bg-red-500 w-[20%]"></div>
-                      </div>
-                      <div className="flex justify-between text-xs mt-1 text-red-600 dark:text-red-400">
-                         <span>Health: Critical</span>
-                      </div>
-                   </div>
-                )}
-              </div>
-            )}
-            {activeTab === 'strategy' && (
-              <div className="animate-fadeIn">
-                <p className="text-lg leading-relaxed">{project.caseStudyData.strategy}</p>
-                {project.project.includes("NDU") && <ArchitectureBlueprint />}
-              </div>
-            )}
-            {activeTab === 'outcome' && (
-              <div className="animate-fadeIn">
-                <p className="text-lg leading-relaxed">{project.caseStudyData.outcome}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 const ContactForm = () => {
@@ -338,7 +119,6 @@ const LogoCarousel = ({ items }) => {
 export default function Portfolio() {
   const [activeTab, setActiveTab] = useState('experience');
   const [expandedJob, setExpandedJob] = useState(1);
-  const [activeModal, setActiveModal] = useState(null);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -372,9 +152,6 @@ export default function Portfolio() {
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .group:hover .group-hover\\:pause { animation-play-state: paused; }
       `}</style>
-
-      {/* Modals & Overlays */}
-      <CaseStudyModal project={experience.find(e => e.id === activeModal)} onClose={() => setActiveModal(null)} />
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
@@ -518,11 +295,6 @@ export default function Portfolio() {
                         </div>
                         {expandedJob === job.id && (
                           <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
-                            {job.hasCaseStudy && (
-                              <button onClick={() => setActiveModal(job.id)} className="w-full mb-6 py-3 rounded-lg flex items-center justify-center gap-2 font-bold text-sm transition-all border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200">
-                                <FileBarChart size={16} className="text-blue-600 dark:text-blue-400" /> View Case Study <ArrowRight size={16} />
-                              </button>
-                            )}
                             <ul className="space-y-3">
                               {job.details.map((point, idx) => (
                                 <li key={idx} className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
