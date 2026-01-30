@@ -307,9 +307,9 @@ export default function Portfolio() {
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold mb-2 text-slate-900 dark:text-white">{personalInfo.name}</h1>
                     <p className="text-xl text-slate-600 dark:text-slate-300">{personalInfo.title}</p>
-                    <div className="flex flex-wrap gap-4 mt-2">
-                      <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Mail size={16} /> {personalInfo.email}</a>
-                      <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Phone size={16} /> {personalInfo.phone}</a>
+                    <div className="flex flex-wrap gap-6 mt-2">
+                      <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:scale-105 origin-left"><Mail size={16} /> {personalInfo.email}</a>
+                      <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:scale-105 origin-left"><Phone size={16} /> {personalInfo.phone}</a>
                     </div>
                   </div>
             </div>
