@@ -292,10 +292,8 @@ export default function Portfolio() {
         
         {/* HERO */}
         <SpotlightCard className="bg-white dark:bg-slate-800 rounded-2xl p-8 mb-10 transition-all duration-300 shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="flex flex-col md:flex-row justify-between gap-10">
-            <div className="space-y-6 max-w-2xl">
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-4">
+          <div className="flex flex-col lg:flex-row justify-between gap-10 items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                   {certImages['./assets/headshot.jpg']?.default && (
                     <img 
                       src={certImages['./assets/headshot.jpg']?.default} 
@@ -305,25 +303,17 @@ export default function Portfolio() {
                   )}
                   <div>
                     <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-                      Cleared Professional
+                      <span className="flex items-center gap-2"><MapPin size={16} /> {personalInfo.location}</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold mb-2 text-slate-900 dark:text-white">{personalInfo.name}</h1>
+                    <p className="text-xl text-slate-600 dark:text-slate-300">{personalInfo.title}</p>
+                    <div className="flex flex-wrap gap-4 mt-2">
+                      <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Mail size={16} /> {personalInfo.email}</a>
+                      <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Phone size={16} /> {personalInfo.phone}</a>
+                    </div>
                   </div>
-                </div>
-                <p className="text-xl text-slate-600 dark:text-slate-300">{personalInfo.title}</p>
-              </div>
-              <div className="flex flex-col gap-3 text-sm text-slate-500 dark:text-slate-400">
-                <div className="flex items-center gap-6">
-                   <span className="flex items-center gap-2"><MapPin size={16} /> {personalInfo.location}</span>
-                </div>
-                <div className="flex flex-wrap gap-4 mt-2">
-                  <a href={`mailto:${personalInfo.email}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Mail size={16} /> {personalInfo.email}</a>
-                  <a href={`tel:${personalInfo.phone}`} className="flex items-center gap-2 hover:text-blue-600 transition-colors font-medium"><Phone size={16} /> {personalInfo.phone}</a>
-                </div>
-              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 flex-1">
+            <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
               {keyMetrics.map((m, i) => (
                 <MetricCard key={i} m={m} />
               ))}
@@ -339,7 +329,7 @@ export default function Portfolio() {
           </div>
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-bold uppercase text-slate-500 mb-2">Proffessional Summary</h3>
+              <h3 className="text-sm font-bold uppercase text-slate-500 mb-2">Professional Summary</h3>
               <p className="leading-relaxed text-lg text-slate-700 dark:text-slate-300">{personalInfo.summary}</p>
             </div>
             <div>
