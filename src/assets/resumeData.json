@@ -5,11 +5,18 @@
     "location": "Marshall, VA",
     "phone": "(540) 270-3664",
     "email": "jacobbrianbenjamin@gmail.com",
-    "summary": "Technical Program Manager & Low-Code Expert holding PMP, Active Secret Clearance, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142k labor cost reduction, a ~$2M profit increase, and significant NPS improvements.",
+    "summary": "Technical Program Manager & Low-Code Expert holding PMP, Active Secret Clearance, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M+ program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142K labor cost reduction, a $600K+ profit increase, and significant NPS improvements.",
     "expertise": [
-      "Technical Program Management", "Agile SDLC", "Digital Modernization", "Enterprise Low-Code Strategy",
-      "Solution Architecture", "Strategic Roadmap Planning", "Process Reengineering", "Risk & Conflict Management",
-      "OCM", "Requirements Engineering"
+      "Technical Program Management",
+      "Agile SDLC",
+      "Digital Modernization",
+      "Enterprise Low-Code Strategy",
+      "Solution Architecture",
+      "Strategic Roadmap Planning",
+      "Process Reengineering",
+      "Risk & Conflict Management",
+      "Organizational Change Management",
+      "Requirements Engineering"
     ]
   },
   "experience": [
@@ -17,98 +24,135 @@
       "id": 1,
       "company": "MANTECH (formerly Definitive Logic)",
       "role": "Program Manager",
-      "period": "Oct 2022 - Present",
+      "period": "Jan 2025 - Present",
       "type": "Remote",
-      "project": "Army – Resource Managers Workspace (RMW) & IRIT",
-      "hasCaseStudy": true, 
-      "caseStudyData": {
-        "title": "Project Recovery: Army RMW",
-        "challenge": "Inherited a $70M project with significant post-deployment issues, low user adoption, and looming budget cuts.",
-        "strategy": "Implemented strict Agile controls, transparent OCM protocols, and strategic OneStream deployment across 26 commands.",
-        "outcome": "NPS score improved from Detractor to Promoter. Identified legacy divestiture opportunities. Increased profitability by $2M via optimization."
-      },
+      "project": "Army – Resource Manager's Workspace (RMW) & Installation Resource Integration Tool (IRIT)",
       "details": [
-        "Leads 20+ team executing $70M Army RMW/IRIT projects.",
-        "Strategic deployment of OneStream PPBE to 26 commands.",
-        "Rescued failing project; NPS from Detractor to Promoter.",
-        "Navigated budget reductions to minimize impact and increased profitability by +$2M."
+        "Leads a team of 20+ across requirements, development, testing, training, and organizational change management (OCM) workstreams in successfully executing the $70M Army RMW and Army G9 IRIT OneStream projects by continuously driving process improvements and transparency.",
+        "Guides government stakeholders in the strategic deployment of a OneStream Planning, Programming, Budgeting, Execution (PPBE) system to the Army Budget Office (ABO), all 26 commands, and 10,000+ users.",
+        "Proactively works with Army stakeholders, including the Business Transformation Team, to identify further opportunities and requirements that can leverage the OneStream RMW platform, enabling the future divestiture of several legacy systems.",
+        "Coaches the Agile team in delivery best practices and processes, including Scrum, requirements elicitation, analysis/ design, and testing methodologies/ planning.",
+        "Rescued a failing project following a failed Initial Operating Capabilities (IOC) go-live. Overhauled delivery processes and established transparent client communication, resulting in a Net Promoter Score (NPS) increase from Detractor to Promoter.",
+        "Navigated federally mandated budget reductions, resulting in minimized impact to project milestones and personnel, and increased profitability by $600K+."
       ]
     },
     {
       "id": 2,
       "company": "MANTECH (formerly Definitive Logic)",
-      "role": "Lead Software Engineer",
-      "period": "Oct 2022 - Dec 2024",
+      "role": "Deputy Project Manager",
+      "period": "Jan 2024 - Jan 2025",
       "type": "Remote",
-      "project": "NDU Connect",
-      "hasCaseStudy": true,
-      "caseStudyData": {
-        "title": "Digital Transformation: NDU Connect",
-        "challenge": "Manual paper processing (DD 2875 forms) causing massive delays and an 11% data entry error rate.",
-        "strategy": "Architected a Salesforce + Docusign automated workflow for account creation and academic support.",
-        "outcome": "1,450 labor hours saved annually ($142k equivalent). 11% error reduction. 30% faster system load times."
-      },
+      "project": "National Defense University - NDU Connect & Academic Business Support",
       "details": [
-        "Deputy PM & Scrum Master for NDU Connect.",
-        "Configured Salesforce/Docusign, saving $142k/yr.",
-        "Reduced system load times by ~30% for high-volume operations.",
-        "Improved Section 508 compliance."
+        "Served as the Deputy Project Manager, Scrum Master, Business Analyst, and Docusign Developer on the NDU Connect and Academic Business Support (ABS) projects, and steered project progress by coaching the Scrum team and customer in delivery process best practices and standards.",
+        "Configured Salesforce and Docusign functionality, including the account creation process and DD 2875 Form, resulting in a savings of 1,450 hours annually, a ~$142,100 labor cost reduction, and an estimated 11% decrease in data entry errors via full digitalization.",
+        "Contributed significant portions to presentation on “Educating Tomorrow’s Defense Leaders by Enabling AI-readiness through DoD University Data Standardization” based on the NDU Connect implementation at the 2024 Army University Learning Symposium.",
+        "Collaborated with stakeholders to identify realistic project goals, and communicate progress, risks, and ROIs to management via Power BI dashboards, weekly/ monthly status reports, and status meetings.",
+        "Managed Agile documentation efforts via Azure DevOps Boards, Teams, and SharePoint, including the creation of user stories and other deliverables."
       ]
     },
     {
       "id": 3,
-      "company": "Nuvitek",
-      "role": "Appian Developer",
-      "period": "Aug 2021 - Oct 2022",
+      "company": "MANTECH (formerly Definitive Logic)",
+      "role": "Lead Software Engineer",
+      "period": "Oct 2022 - Dec 2023",
       "type": "Remote",
-      "project": "NOAA & Dept of Labor",
+      "project": "Air Force Office of Special Investigations - OSI Records, Investigations & Operations Network (ORION)",
       "details": [
-        "Built joint enforcement case mgmt system for NOAA.",
-        "Dynamic XML PDF generation for 60+ docs.",
-        "Migrated DOL Trade Adjustment data."
+        "Utilized prior experience to inform technical design decisions regarding enforcement case management systems in Appian.",
+        "Performed analysis to identify under-performant processes and implemented best practices to reduce system load times by ~30% for high-volume operations, significantly improving the user experience.",
+        "Improved usability and maintainability across system by enforcing improved documentation standards and encouraging collaboration with stakeholders.",
+        "Redesigned all user interfaces to better align with Section 508 and WCAG 2.0 standards."
       ]
     },
     {
       "id": 4,
-      "company": "REI Systems",
-      "role": "Tech Consultant",
-      "period": "Aug 2020 - Aug 2021",
+      "company": "Nuvitek",
+      "role": "Appian Developer",
+      "period": "Aug 2022 - Oct 2022",
       "type": "Remote",
-      "project": "OCC",
+      "project": "Department of Labor - Trade Adjustment Assistance",
       "details": [
-        "Led Appian prototyping teams.",
-        "Integrated Google Cloud AI (Vision, NLP).",
-        "Database developer on 3 concurrent projects."
+        "Performed O&M for the DOL Trade Adjustment Assistance application by migrating historical data and increasing system performance in Appian.",
+        "Reviewed system against requirements to identify requirement gaps and usability and performance issues.",
+        "Facilitated backlog grooming sessions and coached the customer on prioritizing new capabilities against maintenance work.",
+        "Quickly addressed production defects and corrected in-flight processes."
       ]
     },
     {
       "id": 5,
-      "company": "Groundswell",
-      "role": "Appian Consultant",
-      "period": "Jul 2019 - Aug 2020",
-      "type": "Tysons, VA",
-      "project": "CMS",
+      "company": "Nuvitek",
+      "role": "Appian Developer",
+      "period": "Aug 2021 - Aug 2022",
+      "type": "Remote",
+      "project": "National Oceanic and Atmospheric Administration - Enforcement Case Management System",
       "details": [
-        "Designed BPM solutions for CMS.",
-        "Created UX prototypes.",
-        "Researched enterprise frameworks."
+        "Built a joint enforcement case management system in Appian for NOAA’s Office of Law Enforcement and General Counsel Section.",
+        "Led UI/UX endeavors, including the creation of a UX Design and Style guide.",
+        "Designed foundational functionalities, including user management and task management.",
+        "Developed and implemented an efficient process to produce 60+ dynamically generated PDF and Microsoft Word documents via XML templates.",
+        "Implemented Record Type functionalities to optimize speed and efficiency."
+      ]
+    },
+    {
+      "id": 6,
+      "company": "REI Systems",
+      "role": "Technology Consultant",
+      "period": "Aug 2020 - Aug 2021",
+      "type": "Remote",
+      "project": "Office of the Comptroller of the Currency - Central Application Tracking",
+      "details": [
+        "Led teams of 3+ in developing and designing viable Appian solutions for design challenges and contract proposal demos in under one month.",
+        "Developed enterprise framework applications for rapid implementation of common application features.",
+        "Implemented numerous integrations, including Google Cloud Document AI, Google Cloud Vision API, Google Cloud Natural Language API, Google Maps API, Google Chart API, SharePoint, and Salesforce.",
+        "Trained junior staff in software engineering best practices, standards, and consulting approaches.",
+        "Served as a database developer on 3 concurrent projects."
+      ]
+    },
+    {
+      "id": 7,
+      "company": "Groundswell (formerly Collabralink)",
+      "role": "Consultant - Appian Consultant",
+      "period": "Jul 2019 - Aug 2020",
+      "type": "Tysons Corner, VA",
+      "project": "Centers for Medicare & Medicaid Services - Acquisition Lifecycle Modernization",
+      "details": [
+        "Designed and implemented BPM-based solutions using Appian low-code software.",
+        "Performed analysis, design, and development of BPM-based applications in an Agile environment.",
+        "Translated business process system requirement specifications into process model prototypes and solutions.",
+        "Researched key systems and wrote business proposals to enhance internal enterprise frameworks.",
+        "Coordinated closely with other developers to verify proper implementation of program and system specifications.",
+        "Presented UX designs and solutions to senior staff, promoting user-centric design decisions."
       ]
     }
   ],
   "education": [
-    { "school": "University of Maryland Global Campus", "degree": "M.S. IT: Systems Engineering", "date": "Aug 2022" },
-    { "school": "Virginia Tech", "degree": "B.S. Psychology", "date": "Jul 2019" }
+    {
+      "school": "MIT xPRO",
+      "degree": "Driving Innovation with Generative AI",
+      "date": "Nov 2025"
+    },
+    {
+      "school": "University of Maryland Global Campus",
+      "degree": "M.S. IT: Systems Engineering",
+      "date": "Aug 2022"
+    },
+    {
+      "school": "Virginia Polytechnical Institute and State University",
+      "degree": "B.S. Psychology",
+      "date": "Jul 2019"
+    }
   ],
   "volunteer": {
     "org": "FIRST Chesapeake & FIRST Robotics Team 1731",
     "role": "Volunteer Coordinator & Mentor",
     "period": "Nov 2022 - Mar 2025",
     "details": [
-      "Lead presenter at 2024 Mentors Conference on adapting Agile Scrum.",
-      "Assisted with recruiting volunteers for competitions in VA, MD, and DC.",
-      "Facilitated cybersecurity education for students via games.",
-      "Mentored 15+ high school students in Agile and systems engineering.",
-      "Supported team in winning 2023 & 2024 Championships."
+      "Lead presenter at the FIRST Chesapeake GEARED UP: Mentors Conference 2024 on adapting and implementing Agile Scrum methodologies for student-led teams.",
+      "Assisted full-time staff with recruiting volunteers and assigning volunteer roles for three-day competitions in Virginia, Maryland, and Washington D.C.",
+      "Facilitated age-appropriate education on cybersecurity for elementary, middle school, and high school age students via card games at competition events.",
+      "Mentored team of 15+ high school age students during a six-week build period in Agile Scrum methodologies, systems engineering and design principles, software development best practices, and “real-world” team processes.",
+      "Supported team in achieving several accomplishments, including: 2023 and 2024 Chesapeake District Championship winner, the Innovation in Control Award, the Excellence in Engineering Award, and 4 Autonomous Awards."
     ]
   },
   "affiliations": [
@@ -117,31 +161,138 @@
     "Member, Phi Theta Kappa Honor Society"
   ],
   "certifications": [
-    { "name": "PMP", "id": "PMI", "type": "pmi" },
-    { "name": "Appian Lead Dev", "id": "ACLD", "type": "appian" },
-    { "name": "Security+", "id": "SEC+", "type": "security" },
-    { "name": "Lean Six Sigma Black Belt", "id": "LSSBB", "type": "lean" },
-    { "name": "CSM & PSM", "id": "CSM", "type": "scrum" },
-    { "name": "Salesforce Admin", "id": "SF-ADM", "type": "salesforce" },
-    { "name": "Docusign IAM", "id": "DOCU", "type": "docu" },
-    { "name": "Azure Fundamentals", "id": "AZURE", "type": "microsoft" },
-    { "name": "FinOps Practitioner", "id": "FIN", "type": "finance" },
-    { "name": "MIT GenAI", "id": "MIT", "type": "ai" }
+    {
+      "name": "Project Management Professional (PMP)",
+      "logo": "pmp.png",
+      "category": "Management & Methodology"
+    },
+    {
+      "name": "Appian Certified Lead Developer",
+      "logo": "appian.png",
+      "category": "Platforms & Development"
+    },
+    {
+      "name": "CompTIA Security+",
+      "logo": "securityplus.png",
+      "category": "Security & Infrastructure"
+    },
+    { 
+      "name": "Lean Six Sigma Black Belt", 
+      "logo": "lssbb.png",
+      "category": "Management & Methodology" 
+    },
+    { 
+      "name": "Certified Scrum Master (CSM)", 
+      "logo": "csm.png",
+      "category": "Management & Methodology" 
+    },
+    {
+      "name": "Professional Scrum Master (PSM)",
+      "logo": "psm.png",
+      "category": "Management & Methodology"
+    },
+    {
+      "name": "Salesforce Certified Administrator",
+      "logo": "salesforce.png",
+      "category": "Platforms & Development"
+    },
+    {
+      "name": "Docusign Sales Executive",
+      "logo": "docusign.png",
+      "category": "Functional & Consulting"
+    },
+    {
+      "name": "Docusign IAM for Customer Experience - Sales Executive",
+      "logo": "docusign-cx.png",
+      "category": "Functional & Consulting"
+    },
+    {
+      "name": "Microsoft Azure Fundamentals",
+      "logo": "azure.png",
+      "category": "Security & Infrastructure"
+    },
+    {
+      "name": "FinOps Certified Practitioner",
+      "logo": "finops.png",
+      "category": "Functional & Consulting"
+    },
+    {
+      "name": "Certified Web Application Security Professional (CWASP)",
+      "logo": "cwasp.png",
+      "category": "Security & Infrastructure"
+    },
+    {
+      "name": "Splunk Core Certified Power User (expired 2022)",
+      "logo": "splunk.png",
+      "category": "Platforms & Development"
+    },
+    {
+      "name": "UiPath Certified Advanced RPA Developer (expired 2021)",
+      "logo": "uipath.png",
+      "category": "Platforms & Development"
+    }
   ],
   "keyMetrics": [
-    { "label": "Program Value", "value": "$70M", "icon": "TrendingUp", "color": "text-emerald-500" },
-    { "label": "Annual Savings", "value": "$142k", "icon": "FileText", "color": "text-blue-500" },
-    { "label": "Hours Saved/Yr", "value": "1,450", "icon": "Activity", "color": "text-amber-500" },
-    { "label": "Users Supported", "value": "10k+", "icon": "Users", "color": "text-purple-500" }
+    {
+      "label": "Program Value",
+      "value": "$70M",
+      "icon": "Briefcase",
+      "color": "text-blue-500"
+    },
+    {
+      "label": "On Contract Growth",
+      "value": "$3M",
+      "icon": "TrendingUp",
+      "color": "text-blue-500"
+    },
+    {
+      "label": "Increased Profitability",
+      "value": "$600K+",
+      "icon": "DollarSign",
+      "color": "text-blue-500"
+    },
+    {
+      "label": "Eliminated Waste",
+      "value": "$200K+",
+      "icon": "Zap",
+      "color": "text-blue-500"
+    }
   ],
   "skillCategories": {
-    "Platforms & Apps": ["Appian", "Salesforce", "OneStream", "Microsoft Power BI", "Docusign"],
-    "Databases": ["MySQL", "MariaDB", "Oracle Database", "Microsoft SQL Server"],
-    "Management Tools": ["Jira", "Azure DevOps", "Asana", "IBM Jazz", "MS Project", "Visio"]
+    "Platforms & Apps": [
+      "Appian",
+      "Salesforce",
+      "OneStream",
+      "Microsoft Power BI",
+      "Docusign"
+    ],
+    "Databases": [
+      "MySQL",
+      "MariaDB",
+      "Oracle Database",
+      "Microsoft SQL Server"
+    ],
+    "Management Tools": [
+      "Jira",
+      "Azure DevOps",
+      "Asana",
+      "IBM Jazz",
+      "MS Project",
+      "Visio"
+    ]
   },
   "testimonials": [
-    { "source": "Army Stakeholder", "text": "Successfully executed $70M projects by continuously driving process improvements." },
-    { "source": "NDU Leadership", "text": "Decreased data entry errors by ~11% via full digitalization." },
-    { "source": "Senior Director", "text": "Rescued a failing project, increasing NPS from Detractor to Promoter." }
+    {
+      "source": "Army RMW PM",
+      "text": "Since Jacob has come on board, he's definetely improved team collaboration. Again, I've got to give credit to Jacob coming in and trying to align the team better and we've definetely see a lot of improvement over the last year."
+    },
+    {
+      "source": "Army RMW COR",
+      "text": "I wanted to say that as the COR, I do appreciate Jacob and his efforts. They've helped a lot. They've helped us alot of times during these calls (Integrated Program Reviews). We'll work out something related to onboarding, or the contract, or even payments/ We'll do it during this call, but if it's not resolved, then he'll follow up. I appreciate it because I do have other contracts, and I try to be time sensitive when we're doing onboarding or anything like that, but he does make sure that he typically keeps me in line. So, I appreciate his assistance."
+    },
+    {
+      "source": "Army RMW PM",
+      "text": "Your background in software development knowledge has been critical in understanding where risk areas are and what level of effort is required to complete a piece of capability. From my perspective, you are effective in getting the work complete by collaborating with the development team."
+    }
   ]
 }

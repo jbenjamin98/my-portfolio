@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Mail, Phone, MapPin, Briefcase, User, Moon, Sun, 
+  Mail, Phone, MapPin, Briefcase, Moon, Sun, 
   ChevronDown, ChevronUp, Terminal as TerminalIcon, Cpu, Shield, Users, 
   Activity, Calendar, Cloud, FileText, Hexagon, Monitor, 
-  TrendingUp, Database, BookOpen, Award, Zap, Target,
-  CheckCircle2, Send, 
-  ClipboardList, Palette
+  TrendingUp, BookOpen, Award,
+  ClipboardList, DollarSign, Zap, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight, Linkedin,
+  Car, Helicopter, Van, Sailboat, Ambulance, Bike, Truck, Tractor
 } from 'lucide-react';
 import resumeData from './assets/resumeData.json';
 
@@ -25,7 +25,7 @@ const certifications = resumeData.certifications;
 
 const keyMetrics = resumeData.keyMetrics.map(item => ({
   ...item,
-  icon: { TrendingUp, FileText, Activity, Users }[item.icon]
+  icon: { TrendingUp, FileText, Activity, Users, Briefcase, DollarSign, Zap }[item.icon]
 }));
 
 const skillCategories = resumeData.skillCategories;
@@ -35,82 +35,146 @@ const testimonials = resumeData.testimonials;
 // --- HELPER COMPONENTS ---
 
 const AnimatedCounter = ({ value }) => {
-  return <span>{value}</span>;
+  const [display, setDisplay] = useState(() => {
+    const match = value.match(/^([^0-9]*)([0-9,.]+)(.*)$/);
+    return match ? `${match[1]}0${match[3]}` : value;
+  });
+  const elementRef = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const match = value.match(/^([^0-9]*)([0-9,.]+)(.*)$/);
+    if (!match) return;
+
+    const [, prefix, numStr, suffix] = match;
+    const target = parseFloat(numStr.replace(/,/g, ''));
+    
+    if (isNaN(target)) return;
+
+    let startTime;
+    let animationFrameId;
+    const duration = 2000;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 4); // Ease out quart
+      
+      const current = Math.floor(ease * target);
+      setDisplay(`${prefix}${current.toLocaleString()}${suffix}`);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else {
+        setDisplay(value);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, [value]);
+
+  return <span ref={elementRef}>{display}</span>;
 };
 
-const ContactForm = () => {
-  const [status, setStatus] = useState('idle'); 
-  const handleSend = (e) => {
-    e.preventDefault();
-    setStatus('sending');
-    setTimeout(() => { setStatus('sent'); setTimeout(() => setStatus('idle'), 3000); }, 1500);
+// Load all images from assets directory
+const certImages = import.meta.glob('./assets/*.{png,jpg,jpeg,svg,webp}', { eager: true });
+
+const SpotlightCard = ({ children, className = "", as: Component = "div", ...props }) => {
+  const divRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = (e) => {
+    if (!divRef.current) return;
+    const rect = divRef.current.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    if (props.onMouseMove) props.onMouseMove(e);
+  };
+
+  const handleMouseEnter = (e) => {
+    setOpacity(1);
+    if (props.onMouseEnter) props.onMouseEnter(e);
+  };
+
+  const handleMouseLeave = (e) => {
+    setOpacity(0);
+    if (props.onMouseLeave) props.onMouseLeave(e);
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl p-8 shadow-lg mt-12 mb-20 border border-slate-200 dark:border-slate-700">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white"><Send size={20} /> Direct Message</h3>
+    <Component
+      ref={divRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`relative group overflow-hidden ${className}`}
+      {...props}
+    >
+      <div
+        className="pointer-events-none absolute -inset-px transition duration-300 opacity-0 group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(59, 130, 246, 0.1), transparent 40%)`,
+        }}
+      />
+      <div className="relative z-10 h-full">
+        {children}
       </div>
-      {status === 'sent' ? (
-        <div className="h-48 flex flex-col items-center justify-center animate-fadeIn text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-          <CheckCircle2 size={48} className="mb-3" />
-          <span className="text-lg font-bold">Message Transmitted</span>
+    </Component>
+  );
+};
+
+const CertificationItem = ({ cert }) => {
+  // Resolve image path
+  const imagePath = `./assets/${cert.logo}`;
+  const imageSrc = certImages[imagePath]?.default;
+
+  return (
+    <SpotlightCard className="h-full p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-slate-50 dark:bg-slate-900 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="w-24 h-24 mb-4 flex items-center justify-center">
+          {imageSrc ? (
+            <img src={imageSrc} alt={cert.name} className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110" />
+          ) : (
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400"><Shield size={32} /></div>
+          )}
         </div>
-      ) : (
-        <form onSubmit={handleSend} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <input type="email" placeholder="Email Address" className="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-sm outline-none bg-transparent focus:border-blue-500 dark:text-white" required />
-            <select className="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-sm outline-none bg-transparent focus:border-blue-500 dark:text-white dark:bg-slate-800">
-              <option>Project Inquiry</option><option>Opportunity</option>
-            </select>
-          </div>
-          <textarea placeholder="Message..." className="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-sm h-32 resize-none outline-none bg-transparent focus:border-blue-500 dark:text-white" required></textarea>
-          <button type="submit" disabled={status === 'sending'} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md">
-            {status === 'sending' ? 'Transmitting...' : 'Send Message'}
-          </button>
-        </form>
-      )}
-    </div>
+        <span className="font-bold text-slate-800 dark:text-slate-100 text-xs text-center line-clamp-2 leading-tight">{cert.name}</span>
+      </div>
+    </SpotlightCard>
   );
 };
 
-const CertLogo = ({ name, type }) => {
-  const styles = {
-    pmi: { bg: "bg-[#005696]", icon: Briefcase, color: "text-white" },
-    appian: { bg: "bg-[#1e3a8a]", icon: Hexagon, color: "text-white" },
-    scrum: { bg: "bg-[#f57f20]", icon: Users, color: "text-white" },
-    security: { bg: "bg-[#cc0000]", icon: Shield, color: "text-white" },
-    salesforce: { bg: "bg-[#00a1e0]", icon: Cloud, color: "text-white" },
-    microsoft: { bg: "bg-[#00a4ef]", icon: Monitor, color: "text-white" },
-    lean: { bg: "bg-slate-800", icon: Activity, color: "text-white" },
-    docu: { bg: "bg-[#ffce00]", icon: FileText, color: "text-black" },
-    data: { bg: "bg-[#ce1126]", icon: TerminalIcon, color: "text-white" },
-    finance: { bg: "bg-[#00c7b7]", icon: TrendingUp, color: "text-white" },
-  };
-  const style = styles[type] || styles.pmi;
-  const Icon = style.icon;
+const MetricCard = ({ m }) => {
+  const [key, setKey] = useState(0);
+  
   return (
-    <div className="flex flex-col items-center justify-center w-[160px] h-[140px] mx-2 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 bg-white dark:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
-      <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${style.bg} ${style.color} shadow-sm`}>
-        <Icon size={28} strokeWidth={2} />
+    <SpotlightCard 
+      className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      onMouseEnter={() => setKey(prev => prev + 1)}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        <m.icon size={16} className={m.color} />
+        <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{m.label}</span>
       </div>
-      <span className="font-bold text-slate-800 dark:text-slate-100 text-xs text-center line-clamp-2 leading-tight">{name}</span>
-    </div>
-  );
-};
-
-const LogoCarousel = ({ items }) => {
-  const carouselItems = [...items, ...items];
-  return (
-    <div className="relative w-full overflow-hidden py-4 group">
-      <div className="absolute left-0 top-0 bottom-0 w-8 z-10 bg-gradient-to-r from-white to-transparent dark:from-slate-800"></div>
-      <div className="absolute right-0 top-0 bottom-0 w-8 z-10 bg-gradient-to-l from-white to-transparent dark:from-slate-800"></div>
-      <div className="flex w-max animate-scroll group-hover:pause">
-        {carouselItems.map((cert, idx) => (
-          <CertLogo key={`${cert.name}-${idx}`} name={cert.name} type={cert.type} />
-        ))}
-      </div>
-    </div>
+      <div className="text-2xl font-bold text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-110 origin-left"><AnimatedCounter key={key} value={m.value} /></div>
+    </SpotlightCard>
   );
 };
 
@@ -119,14 +183,65 @@ const LogoCarousel = ({ items }) => {
 export default function Portfolio() {
   const [activeTab, setActiveTab] = useState('experience');
   const [expandedJob, setExpandedJob] = useState(1);
+  const [certView, setCertView] = useState('carousel');
+  const [isPaused, setIsPaused] = useState(false);
+  const scrollContainerRef = useRef(null);
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     return false;
   });
+  const [greeting] = useState(() => {
+    const greetings = ["Hello!", "Welcome!", "Hi there!", "Greetings!", "Nice to see you!"];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  });
+  
+  const footerIcons = [Car, Helicopter, Van, Sailboat, Ambulance, Bike, Truck, Tractor];
+  const [FooterIcon, setFooterIcon] = useState(() => footerIcons[Math.floor(Math.random() * footerIcons.length)]);
+  const handleAnimationIteration = () => {
+    setFooterIcon(footerIcons[Math.floor(Math.random() * footerIcons.length)]);
+  };
 
   const toggleJob = (id) => setExpandedJob(expandedJob === id ? null : id);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || certView !== 'carousel') return;
+
+    let animationId;
+    const scroll = () => {
+      if (!isPaused) {
+        // Infinite scroll logic: reset when we've scrolled past the first set
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0;
+        } else {
+          container.scrollLeft += 1; // Scroll speed
+        }
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+    animationId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(animationId);
+  }, [certView, isPaused]);
+
+  const scrollCarousel = (direction) => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = 300;
+      if (direction === 'left') {
+        if (container.scrollLeft <= 0) {
+          container.scrollLeft = container.scrollWidth / 2;
+        }
+        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      } else {
+        if (container.scrollLeft >= container.scrollWidth / 2) {
+          container.scrollLeft = 0;
+        }
+        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
+    }
+  };
 
   useEffect(() => {
     const root = document.documentElement;
@@ -148,17 +263,19 @@ export default function Portfolio() {
       <style>{`
         .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-scroll { animation: scroll 30s linear infinite; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .group:hover .group-hover\\:pause { animation-play-state: paused; }
+        @keyframes fly { 0% { transform: translateX(-100px); } 100% { transform: translateX(100vw); } }
+        .animate-fly { animation: fly 30s linear infinite; }
+        .pause-on-hover:hover { animation-play-state: paused; }
       `}</style>
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <SpotlightCard as="header" className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
            <div className="font-bold text-lg flex items-center gap-2">
-             <Shield size={24} className="text-blue-600 dark:text-blue-400" />
+             <TerminalIcon size={24} className="text-blue-600 dark:text-blue-400" />
              <span className="tracking-tight">JACOB BENJAMIN</span>
+             <span className="hidden sm:inline text-slate-400 dark:text-slate-500 font-normal ml-2">| {greeting}</span>
            </div>
            <div className="flex items-center gap-3">
              <button 
@@ -169,19 +286,30 @@ export default function Portfolio() {
              </button>
            </div>
         </div>
-      </header>
+      </SpotlightCard>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         
         {/* HERO */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 mb-10 relative overflow-hidden transition-all duration-300 shadow-sm border border-slate-200 dark:border-slate-700">
-          <div className="relative z-10 flex flex-col md:flex-row justify-between gap-10">
+        <SpotlightCard className="bg-white dark:bg-slate-800 rounded-2xl p-8 mb-10 transition-all duration-300 shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col md:flex-row justify-between gap-10">
             <div className="space-y-6 max-w-2xl">
               <div>
-                <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
-                  CLEARANCE: SECRET
+                <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-4">
+                  {certImages['./assets/headshot.jpg']?.default && (
+                    <img 
+                      src={certImages['./assets/headshot.jpg']?.default} 
+                      alt={personalInfo.name} 
+                      className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
+                    />
+                  )}
+                  <div>
+                    <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                      ACTIVE SECRET CLEARANCE
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-2 text-slate-900 dark:text-white">{personalInfo.name}</h1>
+                  </div>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-2 text-slate-900 dark:text-white">{personalInfo.name}</h1>
                 <p className="text-xl text-slate-600 dark:text-slate-300">{personalInfo.title}</p>
               </div>
               <div className="flex flex-col gap-3 text-sm text-slate-500 dark:text-slate-400">
@@ -197,23 +325,17 @@ export default function Portfolio() {
 
             <div className="grid grid-cols-2 gap-4 flex-1">
               {keyMetrics.map((m, i) => (
-                <div key={i} className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
-                  <div className="flex items-center gap-2 mb-2">
-                    <m.icon size={16} className={m.color} />
-                    <span className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{m.label}</span>
-                  </div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white"><AnimatedCounter value={m.value} /></div>
-                </div>
+                <MetricCard key={i} m={m} />
               ))}
             </div>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* MISSION PROFILE */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 mb-10 border-l-4 border-l-blue-600 shadow-sm">
+        <SpotlightCard className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 mb-10 border-l-4 border-l-blue-600 shadow-sm">
           <div className="flex items-center gap-2 mb-6 text-slate-900 dark:text-white">
             <ClipboardList size={24} className="text-blue-600 dark:text-blue-400" />
-            <h2 className="text-2xl font-bold">Mission Profile</h2>
+            <h2 className="text-2xl font-bold"> Professional Profile</h2>
           </div>
           <div className="space-y-6">
             <div>
@@ -231,7 +353,7 @@ export default function Portfolio() {
               </div>
             </div>
           </div>
-        </div>
+        </SpotlightCard>
 
         {/* NAVIGATION */}
         <div className="flex overflow-x-auto pb-4 gap-2 mb-6 md:hidden">
@@ -279,7 +401,7 @@ export default function Portfolio() {
                   {experience.map((job) => (
                     <div key={job.id} className="relative">
                       <div className="absolute -left-[35px] sm:-left-[43px] top-6 w-4 h-4 rounded-full border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"></div>
-                      <div className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 transition-all hover:shadow-md ${expandedJob === job.id ? 'ring-1 ring-blue-500' : ''}`}>
+                      <SpotlightCard className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 transition-all hover:shadow-md ${expandedJob === job.id ? 'ring-1 ring-blue-500' : ''}`}>
                         <div className="cursor-pointer flex flex-col sm:flex-row sm:items-start justify-between gap-4" onClick={() => toggleJob(job.id)}>
                           <div className="flex-1">
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white">{job.role}</h3>
@@ -304,7 +426,7 @@ export default function Portfolio() {
                             </ul>
                           </div>
                         )}
-                      </div>
+                      </SpotlightCard>
                     </div>
                   ))}
                 </div>
@@ -312,10 +434,10 @@ export default function Portfolio() {
                 {/* Testimonials */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                   {testimonials.map((item, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <SpotlightCard key={idx} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                       <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-bold uppercase">{item.source}</div>
                       <p className="italic text-sm text-slate-600 dark:text-slate-300">"{item.text}"</p>
-                    </div>
+                    </SpotlightCard>
                   ))}
                 </div>
               </div>
@@ -323,13 +445,88 @@ export default function Portfolio() {
 
             {activeTab === 'skills' && (
               <div className="space-y-10 animate-fadeIn">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><Shield size={20} className="text-blue-600" /> Credentials Vault</h3>
-                  <LogoCarousel items={certifications} />
-                </div>
+                <SpotlightCard className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white"><Shield size={20} className="text-blue-600" /> Certifications</h3>
+                    <div 
+                      className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1 gap-1"
+                      onMouseEnter={() => setIsPaused(true)}
+                      onMouseLeave={() => setIsPaused(false)}
+                    >
+                      {certView === 'carousel' && (
+                        <>
+                          <button 
+                            onClick={() => scrollCarousel('left')}
+                            className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-600 transition-all"
+                            title="Scroll Left"
+                          >
+                            <ChevronLeft size={18} />
+                          </button>
+                          <button 
+                            onClick={() => scrollCarousel('right')}
+                            className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-600 transition-all"
+                            title="Scroll Right"
+                          >
+                            <ChevronRight size={18} />
+                          </button>
+                          <div className="w-px bg-slate-300 dark:bg-slate-600 mx-1 my-1"></div>
+                        </>
+                      )}
+                      <button 
+                        onClick={() => setCertView('grid')}
+                        className={`p-2 rounded-md transition-all ${certView === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                        title="Grid View"
+                      >
+                        <LayoutGrid size={18} />
+                      </button>
+                      <button 
+                        onClick={() => setCertView('carousel')}
+                        className={`p-2 rounded-md transition-all ${certView === 'carousel' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                        title="Carousel View"
+                      >
+                        <GalleryHorizontal size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {certView === 'grid' ? (
+                    <div className="space-y-8">
+                      {Object.entries(certifications.reduce((acc, cert) => {
+                        const cat = cert.category || 'Other';
+                        if (!acc[cat]) acc[cat] = [];
+                        acc[cat].push(cert);
+                        return acc;
+                      }, {})).map(([category, certs]) => (
+                        <div key={category}>
+                          <h4 className="text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">{category}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {certs.map((cert, idx) => (
+                              <CertificationItem key={`${cert.name}-${idx}`} cert={cert} />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div 
+                      ref={scrollContainerRef}
+                      className="relative w-full overflow-x-hidden py-2"
+                      onMouseEnter={() => setIsPaused(true)}
+                      onMouseLeave={() => setIsPaused(false)}
+                    >
+                      <div className="flex w-max gap-4">
+                        {[...certifications, ...certifications].map((cert, idx) => (
+                          <div key={`carousel-${idx}`} className="w-[280px] shrink-0">
+                            <CertificationItem cert={cert} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </SpotlightCard>
                 
                 {/* Detailed Skills Section (Restored Categories) */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <SpotlightCard className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                   <div className="flex items-center gap-2 mb-6">
                     <Cpu size={20} className="text-blue-600" />
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">Technical Proficiency</h3>
@@ -348,7 +545,7 @@ export default function Portfolio() {
                       </div>
                     ))}
                   </div>
-                </div>
+                </SpotlightCard>
               </div>
             )}
 
@@ -357,16 +554,17 @@ export default function Portfolio() {
                 <div className="flex items-center gap-2 mb-4 text-slate-500 dark:text-slate-400"><BookOpen size={24} /> <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Education</h2></div>
                 <div className="grid gap-4">
                   {education.map((edu, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex justify-between items-center">
+                    <SpotlightCard key={idx} className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-bold text-slate-900 dark:text-white">{edu.school}</h3>
                         <p className="text-blue-600 dark:text-blue-400 text-sm">{edu.degree}</p>
                       </div>
                       <div className="text-right text-xs text-slate-500">
                         <p>{edu.date}</p>
-                        <p className="flex items-center gap-1 justify-end mt-1"><MapPin size={10} /> {edu.location}</p>
                       </div>
                     </div>
+                    </SpotlightCard>
                   ))}
                 </div>
               </div>
@@ -374,8 +572,8 @@ export default function Portfolio() {
 
             {activeTab === 'volunteer' && (
               <div className="space-y-6 animate-fadeIn">
-                <div className="flex items-center gap-2 mb-4 text-slate-500 dark:text-slate-400"><Users size={24} /> <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Volunteer Ops</h2></div>
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4 text-slate-500 dark:text-slate-400"><Users size={24} /> <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Volunteer Experience</h2></div>
+                <SpotlightCard className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white">{volunteer.org}</h3>
                   <p className="text-amber-600 font-medium mb-4">{volunteer.role} | {volunteer.period}</p>
                   <ul className="space-y-2">
@@ -385,15 +583,17 @@ export default function Portfolio() {
                       </li>
                     ))}
                   </ul>
-                </div>
+                </SpotlightCard>
                 
                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 mt-6">Affiliations</h3>
                 <div className="grid gap-3">
                   {affiliations.map((aff, i) => (
-                    <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-3 shadow-sm">
-                      <Award size={18} className="text-blue-500" />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{aff}</span>
-                    </div>
+                    <SpotlightCard key={i} className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <Award size={18} className="text-blue-500" />
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{aff}</span>
+                      </div>
+                    </SpotlightCard>
                   ))}
                 </div>
               </div>
@@ -401,9 +601,33 @@ export default function Portfolio() {
 
           </div>
         </div>
-        
-        <ContactForm />
       </main>
+
+      {/* Footer */}
+      <SpotlightCard as="footer" className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-8 mt-12">
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          <div className="absolute top-1/2 left-0 animate-fly" onAnimationIteration={handleAnimationIteration}>
+            <div className="-translate-y-1/2 relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500/20 dark:bg-blue-400/10 blur-[60px] rounded-full"></div>
+              <FooterIcon size={48} className="text-blue-600 dark:text-blue-400" />
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-slate-500 dark:text-slate-400 text-sm">
+            © {new Date().getFullYear()} {personalInfo.name}. All rights reserved.
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="https://www.linkedin.com/in/jbbenj/" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Linkedin size={20} />
+            </a>
+            <a href={`mailto:${personalInfo.email}`} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Mail size={20} />
+            </a>
+          </div>
+        </div>
+      </SpotlightCard>
     </div>
   );
 }
