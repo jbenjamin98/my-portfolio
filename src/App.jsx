@@ -901,19 +901,19 @@ export default function Portfolio() {
                           >
                             <ChevronRight size={18} />
                           </button>
-                          <div className="w-px bg-slate-300 dark:bg-slate-600 mx-1 my-1 hidden md:block"></div>
+                          <div className="w-px bg-slate-300 dark:bg-slate-600 mx-1 my-1"></div>
                         </>
                       )}
                       <button 
                         onClick={() => setCertView('grid')}
-                        className={`hidden md:block p-2 rounded-md transition-all ${certView === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                        className={`p-2 rounded-md transition-all ${certView === 'grid' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                         title="Grid View"
                       >
                         <LayoutGrid size={18} />
                       </button>
                       <button 
                         onClick={() => setCertView('carousel')}
-                        className={`hidden md:block p-2 rounded-md transition-all ${certView === 'carousel' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                        className={`p-2 rounded-md transition-all ${certView === 'carousel' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
                         title="Carousel View"
                       >
                         <GalleryHorizontal size={18} />
@@ -926,7 +926,7 @@ export default function Portfolio() {
                       {groupedCertifications.map(([category, certs]) => (
                         <div key={category}>
                           <h4 className="text-sm font-bold uppercase text-slate-500 dark:text-slate-400 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2">{category}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {certs.map((cert, idx) => (
                               <CertificationItem key={`${cert.name}-${idx}`} cert={cert} />
                             ))}
@@ -937,7 +937,7 @@ export default function Portfolio() {
                   ) : (
                     <div 
                       ref={scrollContainerRef}
-                      className={`relative w-full overflow-x-hidden py-2 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                      className={`relative w-full overflow-x-hidden py-2 touch-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                       onMouseEnter={() => setIsPaused(true)}
                       onMouseLeave={handleMouseLeave}
                       onMouseDown={handleMouseDown}
