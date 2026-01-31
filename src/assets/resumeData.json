@@ -259,24 +259,31 @@
     }
   ],
   "skillCategories": {
-    "Platforms & Apps": [
+    "Program Management": [
+      "Agile",
+      "OCM",
+      "Conflict Management",
+      "Risk Management",
+      "Resource Management"
+    ],
+    "Platforms": [
       "Appian",
       "Salesforce",
       "OneStream",
       "Microsoft Power BI",
       "Docusign"
     ],
-    "Databases": [
-      "MySQL",
-      "MariaDB",
-      "Oracle Database",
-      "Microsoft SQL Server"
+    "Development": [
+      "API Integration",
+      "SQL",
+      "XML",
+      "UI/UX Design",
+      "Data Standardization"
     ],
-    "Management Tools": [
+    "Tools": [
       "Jira",
       "Azure DevOps",
       "Asana",
-      "IBM Jazz",
       "MS Project",
       "Visio"
     ]
