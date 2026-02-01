@@ -31,10 +31,10 @@ import {
   Zap,
   LayoutGrid,
   GalleryHorizontal,
-  ChevronLeft,
-  ChevronRight,
   Linkedin,
   Lightbulb,
+  Share2,
+  RotateCcw,
 } from "lucide-react";
 import resumeData from "./assets/resumeData.json";
 
@@ -65,10 +65,15 @@ const testimonials = resumeData.testimonials;
 
 const greetings = [
   "Hello!",
+  "Low-code expert.",
   "Welcome!",
+  "Program Manager.",
   "Hi there!",
+  "Software Engineer.",
   "Greetings!",
+  "Agile Leader.",
   "Nice to see you!",
+  "Problem Solver."
 ];
 
 // --- HELPER COMPONENTS ---
@@ -137,48 +142,126 @@ const certImages = import.meta.glob("./assets/*.{png,jpg,jpeg,svg,webp}", {
   eager: true,
 });
 
+const ScrollVelocityTilt = () => {
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let velocity = 0;
+    let rafId;
+
+    const update = () => {
+      const currentScrollY = window.scrollY;
+      const targetVelocity = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      velocity += (targetVelocity - velocity) * 0.1;
+      const tilt = Math.max(-10, Math.min(10, velocity * 0.1));
+
+      if (Math.abs(tilt) > 0.01) {
+        document.documentElement.style.setProperty('--scroll-tilt', `${tilt}deg`);
+      } else {
+        document.documentElement.style.setProperty('--scroll-tilt', '0deg');
+      }
+      rafId = requestAnimationFrame(update);
+    };
+
+    rafId = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+  return null;
+};
+
+const noiseUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`;
+
 const SpotlightCard = ({
   children,
   className = "",
   as: Component = "div",
   enableTilt = false,
+  noScrollTilt = false,
   ...props
 }) => {
   const divRef = useRef(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
-  const [transform, setTransform] = useState("");
+  const overlayRef = useRef(null);
+  
+  const shouldScrollTilt = !noScrollTilt && Component !== "header" && Component !== "footer";
 
   const handleMouseMove = (e) => {
-    if (!divRef.current) return;
+    if (!divRef.current || !overlayRef.current) return;
     const rect = divRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    setPosition({ x, y });
+
+    overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
+    overlayRef.current.style.opacity = "1";
 
     if (enableTilt) {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
       const rotateX = ((y - centerY) / centerY) * -3; // Max 3 deg rotation
       const rotateY = ((x - centerX) / centerX) * 3;
-      setTransform(
-        `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`,
-      );
+      
+      divRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+      divRef.current.style.transition = "transform 0.1s ease-out";
     }
 
     if (props.onMouseMove) props.onMouseMove(e);
   };
 
   const handleMouseEnter = (e) => {
-    setOpacity(1);
+    if (overlayRef.current) {
+      overlayRef.current.style.opacity = "1";
+      overlayRef.current.style.animation = "spotlight-pulse 3s ease-in-out infinite";
+    }
     if (props.onMouseEnter) props.onMouseEnter(e);
   };
 
   const handleMouseLeave = (e) => {
-    setOpacity(0);
-    if (enableTilt) setTransform("");
+    if (overlayRef.current) {
+      overlayRef.current.style.opacity = "0";
+      overlayRef.current.style.animation = "";
+    }
+    if (divRef.current && enableTilt) {
+      divRef.current.style.transform = "";
+      divRef.current.style.transition = "transform 0.5s ease-out";
+    }
     if (props.onMouseLeave) props.onMouseLeave(e);
   };
+
+  useEffect(() => {
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (!isTouch) return;
+
+    let animationFrameId;
+    
+    const updateSpotlight = () => {
+      if (!divRef.current || !overlayRef.current) return;
+      
+      const rect = divRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      if (rect.top < viewportHeight && rect.bottom > 0) {
+        const x = rect.width / 2;
+        const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+        const y = progress * rect.height;
+        
+        overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
+        overlayRef.current.style.opacity = "0.6";
+      }
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(updateSpotlight);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    updateSpotlight();
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   return (
     <Component
@@ -186,19 +269,14 @@ const SpotlightCard = ({
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative group overflow-hidden ${className}`}
-      style={{
-        transform,
-        transition: transform
-          ? "transform 0.1s ease-out"
-          : "transform 0.5s ease-out",
-      }}
+      className={`relative group overflow-hidden ${className} ${shouldScrollTilt ? "scroll-tilt-card" : ""}`}
       {...props}
     >
       <div
-        className="pointer-events-none absolute -inset-px transition duration-300 opacity-0 group-hover:opacity-100"
+        ref={overlayRef}
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0"
         style={{
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(59, 130, 246, 0.1), transparent 40%)`,
+          background: `radial-gradient(600px circle at 50% 50%, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`,
         }}
       />
       <div className="relative z-10 h-full">{children}</div>
@@ -206,32 +284,35 @@ const SpotlightCard = ({
   );
 };
 
-const CertificationItem = ({ cert }) => {
+const CertificationItem = ({ cert, index = 0 }) => {
   // Resolve image path
   const imagePath = `./assets/${cert.logo}`;
   const imageSrc = certImages[imagePath]?.default;
 
   return (
-    <SpotlightCard className="h-full p-3 md:p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-slate-50 dark:bg-slate-900 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
-      <div className="flex flex-col items-center justify-center h-full">
-        <div className="w-12 h-12 md:w-24 md:h-24 mb-3 md:mb-4 flex items-center justify-center">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={cert.name}
-              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
-            />
-          ) : (
-            <div className="w-full h-full bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400">
-              <Shield className="w-6 h-6 md:w-8 md:h-8" />
-            </div>
-          )}
+    <div className="h-full animate-float-card" style={{ animationDelay: `-${index * 0.5}s` }}>
+      <SpotlightCard className="h-full p-3 md:p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-slate-50 dark:bg-slate-900 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="w-12 h-12 md:w-24 md:h-24 mb-3 md:mb-4 flex items-center justify-center">
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={cert.name}
+                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400">
+                <Shield className="w-6 h-6 md:w-8 md:h-8" />
+              </div>
+            )}
+          </div>
+          <span className="font-bold text-slate-800 dark:text-slate-100 text-[11px] md:text-xs text-center line-clamp-2 leading-tight">
+            {cert.name}
+          </span>
         </div>
-        <span className="font-bold text-slate-800 dark:text-slate-100 text-[11px] md:text-xs text-center line-clamp-2 leading-tight">
-          {cert.name}
-        </span>
-      </div>
-    </SpotlightCard>
+      </SpotlightCard>
+    </div>
   );
 };
 
@@ -240,8 +321,9 @@ const MetricCard = ({ m }) => {
 
   return (
     <SpotlightCard
-      className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg active:scale-95"
       onMouseEnter={() => setKey((prev) => prev + 1)}
+      onClick={() => setKey((prev) => prev + 1)}
     >
       <div className="flex items-center gap-2 mb-2">
         <m.icon size={16} className={m.color} />
@@ -293,9 +375,9 @@ const Typewriter = ({ words }) => {
     <span>
       {words[index].substring(0, subIndex)}
       <span
-        className={`${blink ? "opacity-100" : "opacity-0"} transition-opacity duration-100`}
+        className={`${blink ? "opacity-100" : "opacity-0"} transition-opacity duration-100 text-blue-600 dark:text-blue-400`}
       >
-        |
+        {'\u2588'}
       </span>
     </span>
   );
@@ -306,7 +388,7 @@ const TestimonialCard = ({ item }) => {
 
   return (
     <SpotlightCard
-      className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer h-fit transition-all duration-300"
+      className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer h-fit transition-all duration-300 active:scale-95"
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="flex items-center gap-2 mb-2 text-slate-400 text-xs font-bold uppercase">
@@ -329,6 +411,79 @@ const TestimonialCard = ({ item }) => {
   );
 };
 
+const triggerConfetti = (x, y) => {
+  const colors = ['#2563eb', '#a855f7', '#3b82f6', '#ef4444', '#eab308'];
+  for (let i = 0; i < 20; i++) {
+    const el = document.createElement('div');
+    el.style.position = 'fixed';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.width = '6px';
+    el.style.height = '6px';
+    el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    el.style.borderRadius = '50%';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '9999';
+    document.body.appendChild(el);
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = 2 + Math.random() * 3;
+    const tx = Math.cos(angle) * velocity * 40;
+    const ty = Math.sin(angle) * velocity * 40 + 20; // slight gravity
+
+    const animation = el.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+    ], {
+      duration: 600 + Math.random() * 300,
+      easing: 'cubic-bezier(0, .9, .57, 1)'
+    });
+
+    animation.onfinish = () => el.remove();
+  }
+};
+
+const useShake = (callback, enabled = true) => {
+  useEffect(() => {
+    if (!enabled) return;
+    
+    let lastX, lastY, lastZ;
+    let lastTime = 0;
+    const threshold = 15;
+
+    const handleMotion = (e) => {
+      const current = e.accelerationIncludingGravity;
+      if (!current) return;
+      
+      const now = Date.now();
+      if ((now - lastTime) > 100) {
+        const diffTime = now - lastTime;
+        lastTime = now;
+        
+        if (lastX !== undefined) {
+          const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+          if (speed > threshold) {
+            callback();
+          }
+        }
+        
+        lastX = current.x;
+        lastY = current.y;
+        lastZ = current.z;
+      }
+    };
+
+    if (typeof window !== 'undefined' && 'ondevicemotion' in window) {
+       window.addEventListener('devicemotion', handleMotion);
+    }
+    return () => {
+       if (typeof window !== 'undefined' && 'ondevicemotion' in window) {
+         window.removeEventListener('devicemotion', handleMotion);
+       }
+    };
+  }, [callback, enabled]);
+};
+
 // --- CUSTOM HOOKS ---
 
 const useDarkMode = () => {
@@ -338,12 +493,6 @@ const useDarkMode = () => {
     }
     return false;
   });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (darkMode) root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [darkMode]);
 
   return [darkMode, setDarkMode];
 };
@@ -387,7 +536,81 @@ const BackToTopButton = () => {
   );
 };
 
-const RevealOnScroll = ({ children }) => {
+const TimelineScrollLine = () => {
+  const lineRef = useRef(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (!lineRef.current) return;
+      
+      const rect = lineRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const triggerPoint = viewportHeight * 0.6;
+      
+      const scrolled = triggerPoint - rect.top;
+      const newHeight = Math.max(0, Math.min(scrolled, rect.height));
+      
+      setHeight(newHeight);
+    };
+
+    window.addEventListener("scroll", updateHeight, { passive: true });
+    updateHeight();
+
+    return () => window.removeEventListener("scroll", updateHeight);
+  }, []);
+
+  return (
+    <div
+      ref={lineRef}
+      className="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700/50"
+      style={{
+        maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+      }}
+    >
+      <div 
+        className="w-full bg-gradient-to-b from-blue-600 via-purple-500 to-blue-600"
+        style={{ height: `${height}px`, transition: "height 0.1s linear" }}
+      />
+    </div>
+  );
+};
+
+const TimelineDot = () => {
+  const dotRef = useRef(null);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    const updateState = () => {
+      if (!dotRef.current) return;
+      
+      const rect = dotRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const triggerPoint = viewportHeight * 0.6;
+      
+      setIsActive(rect.top < triggerPoint);
+    };
+
+    window.addEventListener("scroll", updateState, { passive: true });
+    updateState();
+
+    return () => window.removeEventListener("scroll", updateState);
+  }, []);
+
+  return (
+    <div 
+      ref={dotRef}
+      className={`w-5 h-5 rounded-full border-4 border-slate-50 dark:border-slate-900 transition-all duration-500 ${
+        isActive 
+          ? "bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 animate-timeline-dot shadow-sm scale-100" 
+          : "bg-slate-300 dark:bg-slate-600 scale-75"
+      }`}
+    />
+  );
+};
+
+const RevealOnScroll = ({ children, delay = 0 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
 
@@ -408,6 +631,7 @@ const RevealOnScroll = ({ children }) => {
   return (
     <div
       ref={ref}
+      style={{ transitionDelay: `${isVisible ? delay : 0}ms` }}
       className={`transition-all duration-1000 ease-out transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
     >
       {children}
@@ -440,6 +664,225 @@ const ScrollProgress = () => {
   );
 };
 
+const MatrixRain = () => {
+  const canvasRef = useRef(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    const columns = Math.floor(canvas.width / 20);
+    const drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height / 20));
+    const chars = "01"; 
+
+    const draw = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0F0';
+      ctx.font = '15px monospace';
+      
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * 20, drops[i] * 20);
+        if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    };
+    
+    const interval = setInterval(draw, 50);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('resize', resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-20" />;
+};
+
+const CyberpunkBackground = () => {
+  const sunRef = useRef(null);
+  const gridRef = useRef(null);
+  const bgRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolled = window.scrollY;
+      if (bgRef.current) bgRef.current.style.transform = `translateY(${scrolled * 0.05}px)`;
+      if (sunRef.current) sunRef.current.style.transform = `translate(-50%, ${scrolled * 0.2}px)`;
+      if (gridRef.current) gridRef.current.style.backgroundPosition = `0 ${scrolled * 0.5}px`;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#050505]">
+      <div 
+        ref={bgRef}
+        className="absolute inset-0 bg-gradient-to-b from-purple-900 via-purple-800 to-pink-600 opacity-20"
+        style={{ height: '120%', top: '-10%' }}
+      />
+      <div 
+        ref={sunRef}
+        className="absolute bottom-[30%] left-1/2 w-64 h-64"
+        style={{ transform: 'translate(-50%, 0)' }}
+      >
+        <div className="w-full h-full rounded-full bg-gradient-to-t from-yellow-300 to-pink-600 blur-sm opacity-80 animate-sun-glitch" style={{ boxShadow: '0 0 60px rgba(255, 0, 255, 0.4)' }}>
+           <div className="absolute inset-0 w-full h-full bg-[repeating-linear-gradient(transparent,transparent_4px,#050505_4px,#050505_6px)] opacity-40 animate-pulse" />
+        </div>
+      </div>
+      <div 
+        ref={gridRef}
+        className="absolute bottom-0 left-0 right-0 h-[50%] bg-[linear-gradient(transparent_0%,rgba(0,243,255,0.5)_2px,transparent_4px),linear-gradient(90deg,transparent_0%,rgba(0,243,255,0.5)_2px,transparent_4px)]"
+        style={{ 
+            backgroundSize: '60px 60px', 
+            transform: 'perspective(300px) rotateX(60deg) scale(2)',
+            transformOrigin: 'bottom'
+        }} 
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+    </div>
+  );
+};
+
+const ParallaxBackground = ({ theme }) => {
+  const blob1Ref = useRef(null);
+  const blob2Ref = useRef(null);
+  const blob3Ref = useRef(null);
+
+  useEffect(() => {
+    let animationFrameId;
+    const handleScroll = () => {
+      animationFrameId = requestAnimationFrame(() => {
+        const scrolled = window.scrollY;
+        if (blob1Ref.current) blob1Ref.current.style.transform = `translate3d(0, ${scrolled * 0.35}px, 0)`;
+        if (blob2Ref.current) blob2Ref.current.style.transform = `translate3d(0, ${scrolled * -0.25}px, 0)`;
+        if (blob3Ref.current) blob3Ref.current.style.transform = `translate3d(0, ${scrolled * 0.15}px, 0)`;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  if (theme === 'retro') return <MatrixRain />;
+  if (theme === 'cyberpunk') return <CyberpunkBackground />;
+
+  return (
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 bg-slate-50 dark:bg-slate-900 transition-colors duration-300" />
+      <div
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+      <div ref={blob1Ref} className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '15s' }} />
+      <div ref={blob2Ref} className="absolute top-[30%] -right-[10%] w-[40vw] h-[40vw] min-w-[250px] min-h-[250px] bg-gradient-to-r from-purple-500 via-blue-600 to-purple-500 dark:from-purple-500 dark:via-blue-600 dark:to-purple-500 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '18s' }} />
+      <div ref={blob3Ref} className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] min-w-[400px] min-h-[400px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '20s' }} />
+    </div>
+  );
+};
+
+const PullToRefresh = () => {
+  const [style, setStyle] = useState({ transform: 'translateY(0px)', opacity: 0 });
+  const [icon, setIcon] = useState('chevron'); // 'chevron' or 'spinner'
+  const [rotation, setRotation] = useState(0);
+
+  const state = useRef({
+    isPulling: false,
+    pullDistance: 0,
+    startY: 0,
+    threshold: 100,
+  }).current;
+
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (!isTouch) return;
+
+    const handleTouchStart = (e) => {
+      if (window.scrollY === 0) {
+        state.startY = e.touches[0].clientY;
+        state.isPulling = true;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (!state.isPulling) return;
+      const distance = e.touches[0].clientY - state.startY;
+
+      if (distance > 0) {
+        e.preventDefault();
+        state.pullDistance = distance;
+        const easedPull = 1 - Math.pow(1 - Math.min(distance / (state.threshold * 1.5), 1), 3);
+        const indicatorY = easedPull * state.threshold;
+        setStyle({ transform: `translateY(${indicatorY}px)`, opacity: 1 });
+        setRotation(Math.min(distance / state.threshold, 1) * 360);
+      } else {
+        state.isPulling = false;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!state.isPulling) return;
+      state.isPulling = false;
+
+      if (state.pullDistance > state.threshold) {
+        setIcon('spinner');
+        setStyle({ transform: `translateY(${state.threshold}px)`, opacity: 1 });
+        setTimeout(() => {
+          setIcon('chevron');
+          setStyle({ transform: 'translateY(0px)', opacity: 0 });
+        }, 1500);
+      } else {
+        setStyle({ transform: 'translateY(0px)', opacity: 0 });
+      }
+      state.pullDistance = 0;
+      state.startY = 0;
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
+    };
+  }, [state]);
+
+  return (
+    <div
+      className="fixed top-[-40px] left-0 right-0 z-50 flex justify-center items-center text-slate-500 dark:text-slate-400 transition-transform duration-300 ease-out"
+      style={{ height: '40px', pointerEvents: 'none', ...style }}
+    >
+      {icon === 'spinner' ? (
+        <div className="animate-spin">
+          <Zap size={24} className="text-blue-500" />
+        </div>
+      ) : (
+        <div style={{ transform: `rotate(${rotation}deg)` }}>
+          <ChevronDown size={24} />
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- MAIN APP ---
 
 export default function Portfolio() {
@@ -448,17 +891,102 @@ export default function Portfolio() {
   const [activeSkillFilter, setActiveSkillFilter] = useState(null);
   const [certView, setCertView] = useState("carousel");
   const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(isPaused);
+  const [darkMode, setDarkMode] = useDarkMode();
+  const [specialTheme, setSpecialTheme] = useState(null);
+  const [glitchActive, setGlitchActive] = useState(false);
+
+  useEffect(() => {
+    let timeoutId;
+    const triggerGlitch = () => {
+      setGlitchActive(true);
+      setTimeout(() => setGlitchActive(false), 300);
+      const nextDelay = Math.random() * 5000 + 2000;
+      timeoutId = setTimeout(triggerGlitch, nextDelay);
+    };
+    timeoutId = setTimeout(triggerGlitch, 2000);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode || specialTheme) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [darkMode, specialTheme]);
+
+  useEffect(() => {
+    // Update theme-color meta tag for mobile browsers to match the header/background
+    const metaThemeColor = document.querySelector("meta[name=theme-color]");
+    let color = "#f8fafc"; // Light mode default (slate-50)
+    
+    if (specialTheme === 'retro') {
+      color = "#000000";
+    } else if (specialTheme === 'cyberpunk') {
+      color = "#050505";
+    } else if (darkMode) {
+      color = "#0f172a"; // Dark mode default (slate-900)
+    }
+
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", color);
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "theme-color";
+      meta.content = color;
+      document.head.appendChild(meta);
+    }
+
+    // Ensure viewport-fit=cover is set for notches
+    const metaViewport = document.querySelector("meta[name=viewport]");
+    if (metaViewport && !metaViewport.content.includes("viewport-fit=cover")) {
+      metaViewport.content += ", viewport-fit=cover";
+    }
+  }, [darkMode, specialTheme]);
+
+  const toggleTheme = (theme) => {
+    triggerHaptic();
+    if (specialTheme === theme) {
+      setSpecialTheme(null);
+      document.documentElement.classList.remove(theme);
+    } else {
+      if (specialTheme) {
+        document.documentElement.classList.remove(specialTheme);
+      }
+      setSpecialTheme(theme);
+      document.documentElement.classList.add(theme);
+    }
+  };
+
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   const scrollContainerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeftStart, setScrollLeftStart] = useState(0);
-  const [darkMode, setDarkMode] = useDarkMode();
   const [isVolunteerExpanded, setIsVolunteerExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       return window.innerWidth >= 768;
     }
     return false;
   });
+
+  const triggerHaptic = () => {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  };
+
+  useShake(() => {
+    if (activeSkillFilter) {
+      setActiveSkillFilter(null);
+      triggerHaptic();
+    }
+  }, !!activeSkillFilter);
 
   const navItemRefs = useRef({});
   const [hoveredNav, setHoveredNav] = useState(null);
@@ -476,6 +1004,25 @@ export default function Portfolio() {
     height: 0,
     opacity: 0,
   });
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+
+      // Show nav when near bottom so it docks above footer, otherwise hide on scroll down
+      if (nearBottom) {
+        setShowNav(true);
+      } else if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        setShowNav(false);
+      } else {
+        setShowNav(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const deferredSkillFilter = useDeferredValue(activeSkillFilter);
 
@@ -544,6 +1091,7 @@ export default function Portfolio() {
   ];
 
   const scrollToSection = (id) => {
+    triggerHaptic();
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -567,7 +1115,10 @@ export default function Portfolio() {
       sections.forEach((section) => section && observer.unobserve(section));
   }, []);
 
-  const toggleJob = (id) => setExpandedJob(expandedJob === id ? null : id);
+  const toggleJob = (id) => {
+    triggerHaptic();
+    setExpandedJob(expandedJob === id ? null : id);
+  };
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -575,36 +1126,39 @@ export default function Portfolio() {
 
     let animationId;
     const scroll = () => {
-      if (!isPaused) {
+      if (!isPausedRef.current) {
         // Infinite scroll logic: reset when we've scrolled past the first set
         if (container.scrollLeft >= container.scrollWidth / 2) {
-          container.scrollLeft = 0;
+          container.scrollLeft -= container.scrollWidth / 2;
         } else {
           container.scrollLeft += 1; // Scroll speed
         }
+      }
+
+      const center = container.scrollLeft + container.clientWidth / 2;
+      const cards = container.getElementsByClassName("carousel-card");
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+        const dist = Math.abs(center - cardCenter);
+        const maxDist = container.clientWidth / 2;
+        const scale = Math.max(0.85, 1 - (dist / maxDist) * 0.15);
+        card.style.transform = `scale(${scale})`;
       }
       animationId = requestAnimationFrame(scroll);
     };
     animationId = requestAnimationFrame(scroll);
     return () => cancelAnimationFrame(animationId);
-  }, [certView, isPaused]);
+  }, [certView]);
 
   const handleMouseDown = (e) => {
+    if (window.innerWidth >= 1024) return;
     setIsDragging(true);
-    // Don't set isPaused(true) here, it's handled by onMouseEnter
+    setIsPaused(true);
     if (scrollContainerRef.current) {
       setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
       setScrollLeftStart(scrollContainerRef.current.scrollLeft);
     }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-    setIsPaused(false);
   };
 
   const handleMouseMove = (e) => {
@@ -617,45 +1171,24 @@ export default function Portfolio() {
     }
   };
 
-  const handleTouchStart = (e) => {
-    setIsDragging(true);
-    setIsPaused(true);
-    if (scrollContainerRef.current) {
-      setStartX(e.touches[0].pageX - scrollContainerRef.current.offsetLeft);
-      setScrollLeftStart(scrollContainerRef.current.scrollLeft);
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (!isDragging) return;
-    if (scrollContainerRef.current) {
-      const x = e.touches[0].pageX - scrollContainerRef.current.offsetLeft;
-      const walk = (x - startX) * 2;
-      scrollContainerRef.current.scrollLeft = scrollLeftStart - walk;
-    }
-  };
-
-  const handleTouchEnd = () => {
+  const handleMouseUp = () => {
     setIsDragging(false);
     setIsPaused(false);
   };
 
-  const scrollCarousel = (direction) => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const scrollAmount = 300;
-      if (direction === "left") {
-        if (container.scrollLeft <= 0) {
-          container.scrollLeft = container.scrollWidth / 2;
-        }
-        container.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-      } else {
-        if (container.scrollLeft >= container.scrollWidth / 2) {
-          container.scrollLeft = 0;
-        }
-        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
-      }
-    }
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    setIsPaused(false);
+  };
+
+  const handleTouchStart = () => {
+    setIsPaused(true);
+  };
+
+  // handleTouchMove removed as we use native scrolling for touch
+
+  const handleTouchEnd = () => {
+    setIsPaused(false);
   };
 
   const groupedCertifications = useMemo(() => {
@@ -670,6 +1203,7 @@ export default function Portfolio() {
   }, []);
 
   const handleSkillClick = (skill) => {
+    triggerHaptic();
     if (activeSkillFilter === skill) {
       setActiveSkillFilter(null);
     } else {
@@ -690,12 +1224,30 @@ export default function Portfolio() {
   }, [deferredSkillFilter]);
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
+    <div className="min-h-[100dvh] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative">
+      <PullToRefresh />
       <ScrollProgress />
+      <ScrollVelocityTilt />
+      <ParallaxBackground theme={specialTheme} />
       <BackToTopButton />
       {/* Styles Injection for Animations */}
       <style>{`
-        html { scroll-behavior: smooth; scroll-padding-top: 7rem; }
+        html { 
+          scroll-behavior: smooth; 
+          scroll-padding-top: 7rem; 
+          background-color: #f8fafc;
+          overscroll-behavior-y: none;
+          -webkit-tap-highlight-color: transparent;
+          -webkit-text-size-adjust: 100%;
+        }
+        html.dark { background-color: #0f172a; }
+        
+        :root {
+          --spotlight-color-1: rgba(37, 99, 235, 0.15);
+          --spotlight-color-2: rgba(168, 85, 247, 0.15);
+          --duck-glow: rgba(250, 204, 21, 0.4);
+        }
+
         section { min-height: 20vh; }
         .animate-floatIn { animation: floatIn 0.6s ease-out forwards; opacity: 0; }
         @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -710,6 +1262,21 @@ export default function Portfolio() {
         .animate-gradient-x {
           background-size: 200% 200%;
           animation: gradient-x 3s ease infinite;
+        }
+        @keyframes nav-glow-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.6); }
+          50% { box-shadow: 0 0 30px rgba(37, 99, 235, 0.9); }
+        }
+        @keyframes nav-glow-pulse-dark {
+          0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+          50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8); }
+        }
+        .animate-nav-active {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite, nav-glow-pulse 2s ease-in-out infinite;
+        }
+        .dark .animate-nav-active {
+          animation: gradient-x 3s ease infinite, nav-glow-pulse-dark 2s ease-in-out infinite;
         }
         @keyframes gradient-x { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         
@@ -752,6 +1319,16 @@ export default function Portfolio() {
           80% { clip-path: inset(60% 0 20% 0); }
           100% { clip-path: inset(40% 0 80% 0); }
         }
+        .glitch.active-glitch::before {
+          left: 2px;
+          text-shadow: -2px 0 #ff00c1;
+          animation: glitch-anim-1 0.3s infinite linear alternate-reverse;
+        }
+        .glitch.active-glitch::after {
+          left: -2px;
+          text-shadow: -2px 0 #00fff9;
+          animation: glitch-anim-2 0.3s infinite linear alternate-reverse;
+        }
         @keyframes particle {
           0% { transform: translate(0, 0); opacity: 0; }
           20% { opacity: 1; }
@@ -766,6 +1343,13 @@ export default function Portfolio() {
         }
         .animate-bob {
           animation: bob 2s ease-in-out infinite;
+        }
+        @keyframes float-card {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-float-card {
+          animation: float-card 6s ease-in-out infinite;
         }
         @keyframes float-button {
           0%, 100% { transform: translateY(0); }
@@ -793,6 +1377,22 @@ export default function Portfolio() {
           0%, 100% { box-shadow: 0 0 15px rgba(37, 99, 235, 0.5); transform: scale(1.05); }
           50% { box-shadow: 0 0 5px rgba(37, 99, 235, 0.2); transform: scale(1); }
         }
+        .animate-timeline-dot {
+          background-size: 200% 200%;
+          animation: gradient-x 3s ease infinite, pulse-glow 2s ease-in-out infinite;
+        }
+        @keyframes spotlight-pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        
+        @media (pointer: coarse) {
+          .scroll-tilt-card {
+            transform: perspective(1000px) rotateX(var(--scroll-tilt, 0deg)) translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1));
+            transition: transform 0.2s ease-out;
+            will-change: transform;
+          }
+        }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 10px; }
@@ -800,9 +1400,209 @@ export default function Portfolio() {
         .dark ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #2563eb, #a855f7, #2563eb); border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #1d4ed8, #9333ea, #1d4ed8); }
+
+        /* Carousel Scrollbar */
+        .carousel-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .carousel-scrollbar::-webkit-scrollbar { display: none; }
+        
+        @media (min-width: 1024px) {
+          .carousel-scrollbar { -ms-overflow-style: auto; scrollbar-width: auto; }
+          .carousel-scrollbar::-webkit-scrollbar { display: block; height: 8px; }
+          .carousel-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .carousel-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to right, #2563eb, #a855f7, #2563eb); border-radius: 4px; }
+          .carousel-scrollbar::-webkit-scrollbar-thumb:hover { background: linear-gradient(to right, #1d4ed8, #9333ea, #1d4ed8); }
+        }
         
         /* Text Selection */
         ::selection { background-color: rgba(168, 85, 247, 0.5); color: white; }
+        html.retro ::selection { background-color: #00ff00; color: #000000; }
+        html.cyberpunk ::selection { background-color: #ff00ff; color: #000000; }
+
+        /* Retro Theme */
+        html.retro {
+          --bg-primary: #000000;
+          --text-primary: #00ff00;
+          --spotlight-color-1: rgba(0, 255, 0, 0.2);
+          --spotlight-color-2: rgba(0, 255, 0, 0.05);
+          background-color: #000000 !important;
+          --duck-glow: rgba(0, 255, 0, 0.5);
+        }
+        html.retro body {
+          background-color: #000000 !important;
+          color: #00ff00 !important;
+          font-family: 'Courier New', Courier, monospace !important;
+        }
+        html.retro * {
+          border-color: #00ff00 !important;
+          font-family: 'Courier New', Courier, monospace !important;
+        }
+        html.retro .bg-white, html.retro .bg-slate-50, html.retro .bg-slate-100, 
+        html.retro .dark .bg-slate-900, html.retro .dark .bg-slate-800 {
+          background-color: #000000 !important;
+          color: #00ff00 !important;
+          box-shadow: none !important;
+        }
+        html.retro .text-slate-500, html.retro .text-slate-600, html.retro .text-slate-900, 
+        html.retro .text-blue-600, html.retro .text-blue-500, html.retro .dark .text-slate-400, 
+        html.retro .dark .text-white, html.retro .dark .text-blue-400, html.retro .dark .text-blue-300 {
+          color: #00ff00 !important;
+        }
+        html.retro .bg-blue-500 {
+          background-color: #00ff00 !important;
+        }
+        html.retro img {
+          filter: grayscale(100%) brightness(0.8) sepia(100%) hue-rotate(50deg) saturate(500%);
+        }
+        html.retro::after {
+          content: " ";
+          display: block;
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+          z-index: 60;
+          background-size: 100% 2px, 3px 100%;
+          pointer-events: none;
+        }
+        html.retro [class*="bg-slate-900"] { background-color: #000000 !important; }
+        
+        /* Retro Theme Extras */
+        html.retro ::-webkit-scrollbar-thumb {
+          background: #00ff00 !important;
+          border-radius: 0 !important;
+        }
+        html.retro button span {
+          font-size: 0.75rem !important;
+          letter-spacing: -0.5px;
+        }
+        html.retro ::-webkit-scrollbar-track {
+          background: #000000 !important;
+        }
+        html.retro .bg-gradient-to-r, html.retro .bg-gradient-to-b,
+        html.retro .animate-gradient-x, html.retro .animate-nav-active, html.retro .animate-timeline-dot {
+          background: #00ff00 !important;
+          animation: none !important;
+          box-shadow: none !important;
+        }
+        html.retro .bg-gradient-to-t {
+          display: none !important;
+        }
+        html.retro .text-transparent {
+          background: none !important;
+          -webkit-text-fill-color: #00ff00 !important;
+          color: #00ff00 !important;
+        }
+
+        /* Cyberpunk Theme */
+        html.cyberpunk body {
+          background-color: #050505 !important;
+          color: #00f3ff !important;
+        }
+        html.cyberpunk {
+          --spotlight-color-1: rgba(0, 243, 255, 0.2);
+          --spotlight-color-2: rgba(255, 0, 255, 0.2);
+          background-color: #050505 !important;
+          --duck-glow: rgba(0, 243, 255, 0.5);
+        }
+        html.cyberpunk .bg-white, html.cyberpunk .bg-slate-50, html.cyberpunk .bg-slate-100,
+        html.cyberpunk .dark .bg-slate-900, html.cyberpunk .dark .bg-slate-800 {
+          background-color: #0a0a10 !important;
+          border-color: #ff00ff !important;
+          color: #00f3ff !important;
+          box-shadow: 2px 2px 0px #ff00ff !important;
+        }
+        html.cyberpunk .text-slate-900, html.cyberpunk .dark .text-white {
+          color: #fcee0a !important;
+          text-shadow: 2px 2px 0px #ff00ff;
+        }
+        html.cyberpunk .text-slate-500, html.cyberpunk .text-slate-600, html.cyberpunk .text-slate-400 {
+          color: #ff00ff !important;
+        }
+        html.cyberpunk .text-blue-600, html.cyberpunk .text-blue-500, html.cyberpunk .dark .text-blue-400, html.cyberpunk .dark .text-blue-300 {
+          color: #00f3ff !important;
+        }
+        html.cyberpunk .bg-blue-500 {
+          background-color: #00f3ff !important;
+          box-shadow: 0 0 5px #00f3ff;
+        }
+        html.cyberpunk img {
+          filter: grayscale(100%) sepia(100%) hue-rotate(130deg) saturate(200%) contrast(1.2) drop-shadow(0 0 5px #00f3ff);
+        }
+        
+        /* Cyberpunk Theme Extras */
+        html.cyberpunk ::-webkit-scrollbar-thumb {
+          background: #00f3ff !important;
+          border: 1px solid #ff00ff !important;
+        }
+        html.cyberpunk ::-webkit-scrollbar-track {
+          background: #050505 !important;
+        }
+        html.cyberpunk .bg-gradient-to-r, html.cyberpunk .bg-gradient-to-b {
+          background: linear-gradient(90deg, #ff00ff, #00f3ff) !important;
+        }
+        html.cyberpunk .bg-gradient-to-t {
+          display: none !important;
+        }
+        html.cyberpunk .text-transparent {
+          background: none !important;
+          -webkit-text-fill-color: #fcee0a !important;
+          color: #fcee0a !important;
+        }
+        html.cyberpunk .animate-gradient-x, html.cyberpunk .animate-nav-active {
+          background: linear-gradient(90deg, #ff00ff, #00f3ff) !important;
+          box-shadow: 0 0 15px #00f3ff, 0 0 5px #ff00ff !important;
+        }
+        html.cyberpunk .animate-timeline-dot {
+          background: #00f3ff !important;
+          box-shadow: 0 0 10px #ff00ff !important;
+        }
+        @keyframes sun-glitch {
+          0% { transform: skew(0deg); filter: hue-rotate(0deg); }
+          5% { transform: skew(2deg); filter: hue-rotate(10deg); }
+          10% { transform: skew(0deg); filter: hue-rotate(0deg); }
+          15% { transform: skew(-2deg); filter: hue-rotate(-10deg); }
+          20% { transform: skew(0deg); filter: hue-rotate(0deg); }
+          100% { transform: skew(0deg); filter: hue-rotate(0deg); }
+        }
+        .animate-sun-glitch {
+            animation: sun-glitch 4s infinite step-end;
+        }
+        html.cyberpunk h1, html.cyberpunk h2, html.cyberpunk h3, html.cyberpunk h4, html.cyberpunk h5, html.cyberpunk h6 {
+          font-family: 'Courier New', Courier, monospace !important;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          text-shadow: 2px 0 #ff00ff, -2px 0 #00f3ff;
+        }
+        html.cyberpunk h1, html.cyberpunk h1.animate-gradient-x {
+          background: none !important;
+          box-shadow: none !important;
+          position: relative;
+          display: inline-block;
+          text-shadow: none !important;
+          animation: none !important;
+        }
+        html.cyberpunk h1::before,
+        html.cyberpunk h1::after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: #050505;
+        }
+        html.cyberpunk h1::before {
+          left: 2px;
+          text-shadow: -2px 0 #ff00ff;
+          animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        html.cyberpunk h1::after {
+          left: -2px;
+          text-shadow: -2px 0 #00f3ff;
+          animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
       `}</style>
 
       {/* Header */}
@@ -811,14 +1611,29 @@ export default function Portfolio() {
         className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 pt-[env(safe-area-inset-top)]"
       >
         <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="font-bold text-lg flex items-center gap-2">
-            <TerminalIcon
-              size={24}
-              className="text-blue-600 dark:text-blue-400"
-            />
+          <div
+            className="font-bold text-lg flex items-center gap-2 cursor-pointer"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          >
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTheme('retro');
+              }}
+              className="hover:scale-110 transition-transform"
+            >
+              <TerminalIcon
+                size={24}
+                className="text-blue-600 dark:text-blue-400"
+              />
+            </div>
             <span
-              className="tracking-tight glitch cursor-default"
+              className={`tracking-tight glitch cursor-pointer ${glitchActive ? "active-glitch" : ""}`}
               data-text="JACOB BENJAMIN"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTheme('cyberpunk');
+              }}
             >
               JACOB BENJAMIN
             </span>
@@ -828,20 +1643,43 @@ export default function Portfolio() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: personalInfo.name,
+                    text: `Check out ${personalInfo.name}'s portfolio!`,
+                    url: window.location.href,
+                  }).catch(() => {});
+                  triggerHaptic();
+                }
+              }}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              title="Share"
+            >
+              <Share2 size={20} />
+            </button>
+            <button
+              onClick={() => {
+                if (specialTheme) {
+                  toggleTheme(specialTheme);
+                } else {
+                  setDarkMode(!darkMode);
+                }
+                if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(10);
+              }}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {specialTheme ? <RotateCcw size={20} /> : (darkMode ? <Sun size={20} /> : <Moon size={20} />)}
             </button>
           </div>
         </div>
       </SpotlightCard>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 lg:py-8">
+      <main className="max-w-6xl mx-auto px-4 py-6 lg:py-8 relative z-10">
         {/* HERO */}
         <SpotlightCard
           enableTilt={true}
-          className="bg-white dark:bg-slate-800 rounded-2xl p-6 lg:p-8 mb-6 lg:mb-10 transition-all duration-300 shadow-sm border border-slate-200 dark:border-slate-700 animate-floatIn"
+          className="bg-white dark:bg-slate-800 rounded-2xl p-5 md:p-6 lg:p-8 mb-6 lg:mb-10 transition-all duration-300 shadow-sm border border-slate-200 dark:border-slate-700 animate-floatIn"
           style={{ animationDelay: "0.1s" }}
         >
           <div className="flex flex-col lg:flex-row justify-between gap-6 lg:gap-10 items-center">
@@ -850,7 +1688,7 @@ export default function Portfolio() {
                 <img
                   src={certImages["./assets/headshot.jpg"]?.default}
                   alt={personalInfo.name}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
+                  className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
                 />
               )}
               <div className="text-center sm:text-left">
@@ -859,7 +1697,10 @@ export default function Portfolio() {
                     <MapPin size={16} /> {personalInfo.location}
                   </span>
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-600 to-slate-900 dark:from-white dark:via-blue-400 dark:to-white animate-gradient-x pb-1">
+                <h1 
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-600 to-slate-900 dark:from-white dark:via-blue-400 dark:to-white animate-gradient-x pb-1"
+                  data-text={personalInfo.name}
+                >
                   {personalInfo.name}
                 </h1>
                 <p className="text-xl text-slate-600 dark:text-slate-300">
@@ -869,6 +1710,10 @@ export default function Portfolio() {
                   <a
                     href={`mailto:${personalInfo.email}`}
                     className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all hover:scale-105 origin-left"
+                    onClick={(e) => {
+                      triggerHaptic();
+                      triggerConfetti(e.clientX, e.clientY);
+                    }}
                   >
                     <Mail size={16} /> {personalInfo.email}
                   </a>
@@ -951,6 +1796,7 @@ export default function Portfolio() {
                           {activeSkillFilter}
                         </span>
                       </span>
+                      <span className="hidden sm:inline text-xs text-slate-400 italic ml-1">(Shake to clear)</span>
                     </div>
                     <button
                       onClick={() => setActiveSkillFilter(null)}
@@ -961,65 +1807,71 @@ export default function Portfolio() {
                   </div>
                 )}
 
-                <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-200 dark:border-slate-700 space-y-8">
+                <div className="relative ml-3 sm:ml-0 pl-8 space-y-8">
+                  <TimelineScrollLine />
                   {filteredExperience.length > 0 ? (
-                    filteredExperience.map((job) => (
-                      <div key={job.id} className="relative">
-                        <div className="absolute -left-[35px] sm:-left-[43px] top-6 w-4 h-4 rounded-full border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"></div>
-                        <SpotlightCard
-                          className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 md:p-6 transition-all hover:shadow-md ${expandedJob === job.id ? "ring-1 ring-blue-500" : ""}`}
-                        >
-                          <div
-                            className="cursor-pointer flex flex-col sm:flex-row sm:items-start justify-between gap-2 md:gap-4"
-                            onClick={() => toggleJob(job.id)}
-                          >
-                            <div className="flex-1">
-                              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                                {job.role}
-                              </h3>
-                              <div className="text-blue-600 dark:text-blue-400 font-medium mt-1">
-                                {job.company} • {job.type}
-                              </div>
-                              {job.project && (
-                                <p className="text-sm text-slate-500 mt-2 italic">
-                                  {job.project}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
-                              <span className="flex items-center gap-1 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
-                                <Calendar size={12} /> {job.period}
-                              </span>
-                              {expandedJob === job.id ? (
-                                <ChevronUp
-                                  size={16}
-                                  className="text-slate-400"
-                                />
-                              ) : (
-                                <ChevronDown
-                                  size={16}
-                                  className="text-slate-400"
-                                />
-                              )}
-                            </div>
+                    filteredExperience.map((job, idx) => (
+                      <RevealOnScroll key={job.id} delay={idx * 150}>
+                        <div className="relative group">
+                          <div className="absolute -left-[41px] top-6 transition-transform duration-300 group-hover:scale-125 z-10">
+                            <TimelineDot />
                           </div>
-                          {expandedJob === job.id && (
-                            <div className="mt-4 md:mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
-                              <ul className="space-y-2 md:space-y-3">
-                                {job.details.map((point, idx) => (
-                                  <li
-                                    key={idx}
-                                    className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
-                                  >
-                                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>{" "}
-                                    {point}
-                                  </li>
-                                ))}
-                              </ul>
+                          <div className="absolute -left-[31px] top-8 w-8 h-0.5 bg-blue-200 dark:bg-slate-700 group-hover:bg-blue-400 dark:group-hover:bg-blue-600 transition-colors duration-300"></div>
+                          <SpotlightCard
+                            className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 md:p-6 transition-all hover:shadow-md ${expandedJob === job.id ? "ring-1 ring-blue-500" : ""}`}
+                          >
+                            <div
+                              className="cursor-pointer flex flex-col sm:flex-row sm:items-start justify-between gap-2 md:gap-4"
+                              onClick={() => toggleJob(job.id)}
+                            >
+                              <div className="flex-1">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                                  {job.role}
+                                </h3>
+                                <div className="text-blue-600 dark:text-blue-400 font-medium mt-1">
+                                  {job.company} • {job.type}
+                                </div>
+                                {job.project && (
+                                  <p className="text-sm text-slate-500 mt-2 italic">
+                                    {job.project}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2">
+                                <span className="flex items-center gap-1 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full">
+                                  <Calendar size={12} /> {job.period}
+                                </span>
+                                {expandedJob === job.id ? (
+                                  <ChevronUp
+                                    size={16}
+                                    className="text-slate-400"
+                                  />
+                                ) : (
+                                  <ChevronDown
+                                    size={16}
+                                    className="text-slate-400"
+                                  />
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </SpotlightCard>
-                      </div>
+                            {expandedJob === job.id && (
+                              <div className="mt-4 md:mt-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                <ul className="space-y-2 md:space-y-3">
+                                  {job.details.map((point, idx) => (
+                                    <li
+                                      key={idx}
+                                      className="flex gap-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
+                                    >
+                                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>{" "}
+                                      {point}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </SpotlightCard>
+                        </div>
+                      </RevealOnScroll>
                     ))
                   ) : (
                     <div className="py-12 text-center">
@@ -1063,38 +1915,25 @@ export default function Portfolio() {
                       onMouseEnter={() => setIsPaused(true)}
                       onMouseLeave={() => setIsPaused(false)}
                     >
-                      {certView === "carousel" && (
-                        <>
-                          <button
-                            onClick={() => scrollCarousel("left")}
-                            className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-600 transition-all"
-                            title="Scroll Left"
-                          >
-                            <ChevronLeft size={18} />
-                          </button>
-                          <button
-                            onClick={() => scrollCarousel("right")}
-                            className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-600 transition-all"
-                            title="Scroll Right"
-                          >
-                            <ChevronRight size={18} />
-                          </button>
-                          <div className="w-px bg-slate-300 dark:bg-slate-600 mx-1 my-1"></div>
-                        </>
-                      )}
                       <button
-                        onClick={() => setCertView("grid")}
-                        className={`p-2 rounded-md transition-all ${certView === "grid" ? "bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
-                        title="Grid View"
-                      >
-                        <LayoutGrid size={18} />
-                      </button>
-                      <button
-                        onClick={() => setCertView("carousel")}
+                        onClick={() => {
+                          setCertView("carousel");
+                          triggerHaptic();
+                        }}
                         className={`p-2 rounded-md transition-all ${certView === "carousel" ? "bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
                         title="Carousel View"
                       >
                         <GalleryHorizontal size={18} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCertView("grid");
+                          triggerHaptic();
+                        }}
+                        className={`p-2 rounded-md transition-all ${certView === "grid" ? "bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+                        title="Grid View"
+                      >
+                        <LayoutGrid size={18} />
                       </button>
                     </div>
                   </div>
@@ -1111,6 +1950,7 @@ export default function Portfolio() {
                               <CertificationItem
                                 key={`${cert.name}-${idx}`}
                                 cert={cert}
+                                index={idx}
                               />
                             ))}
                           </div>
@@ -1120,15 +1960,15 @@ export default function Portfolio() {
                   ) : (
                     <div
                       ref={scrollContainerRef}
-                      className={`relative w-full overflow-x-hidden py-2 touch-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+                      className={`relative w-full overflow-x-auto py-2 carousel-scrollbar ${isDragging ? "cursor-grabbing" : "cursor-grab lg:cursor-auto"}`}
                       onMouseEnter={() => setIsPaused(true)}
                       onMouseLeave={handleMouseLeave}
                       onMouseDown={handleMouseDown}
-                      onMouseUp={handleMouseUp}
                       onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
                       onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
                       onTouchEnd={handleTouchEnd}
+                      onTouchCancel={handleTouchEnd}
                       style={{
                         maskImage:
                           "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
@@ -1141,9 +1981,9 @@ export default function Portfolio() {
                           (cert, idx) => (
                             <div
                               key={`carousel-${idx}`}
-                              className="w-[140px] md:w-[280px] shrink-0"
+                              className="w-[140px] md:w-[280px] shrink-0 carousel-card will-change-transform"
                             >
-                              <CertificationItem cert={cert} />
+                              <CertificationItem cert={cert} index={idx} />
                             </div>
                           ),
                         )}
@@ -1205,7 +2045,7 @@ export default function Portfolio() {
                   {education.map((edu, idx) => (
                     <SpotlightCard
                       key={idx}
-                      className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
+                      className="bg-white dark:bg-slate-800 p-5 md:p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
                     >
                       <div className="flex justify-between items-center">
                         <div>
@@ -1238,11 +2078,14 @@ export default function Portfolio() {
                 </div>
 
                 <SpotlightCard
-                  className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 transition-all hover:shadow-md ${isVolunteerExpanded ? "ring-1 ring-blue-500" : ""}`}
+                  className={`bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 md:p-6 transition-all hover:shadow-md ${isVolunteerExpanded ? "ring-1 ring-blue-500" : ""}`}
                 >
                   <div
                     className="cursor-pointer flex flex-col sm:flex-row sm:items-start justify-between gap-4"
-                    onClick={() => setIsVolunteerExpanded(!isVolunteerExpanded)}
+                    onClick={() => {
+                      setIsVolunteerExpanded(!isVolunteerExpanded);
+                      triggerHaptic();
+                    }}
                   >
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -1306,12 +2149,12 @@ export default function Portfolio() {
         {/* NAVIGATION - Floating Bottom Bar */}
         <div className="sticky bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 w-[90%] max-w-sm lg:max-w-3xl mx-auto mt-8">
           <div
-            className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-2 flex justify-between lg:justify-center lg:gap-4 items-center animate-floatIn relative"
+            className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-2 flex justify-between lg:justify-center lg:gap-4 items-center animate-floatIn relative"
             style={{ animationDelay: "0.3s" }}
           >
             {/* Active Blob */}
             <div
-              className="absolute bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-gradient-x shadow-lg shadow-blue-500/50 rounded-xl transition-all duration-300 ease-in-out z-0"
+              className="absolute bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-nav-active rounded-xl transition-all duration-300 ease-in-out z-0"
               style={{
                 left: activeBlobStyle.left,
                 width: activeBlobStyle.width,
@@ -1342,7 +2185,7 @@ export default function Portfolio() {
                   visibleSection === item.id
                     ? "text-white scale-105"
                     : hoveredNav === item.id
-                      ? "text-slate-900 dark:text-white scale-105"
+                      ? "text-slate-900 dark:text-white scale-110 -translate-y-1"
                       : "text-slate-500 dark:text-slate-400"
                 }`}
               >
@@ -1353,7 +2196,10 @@ export default function Portfolio() {
               </button>
             ))}
             <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                triggerHaptic();
+              }}
               className="lg:hidden p-3 rounded-xl transition-all duration-300 relative flex flex-col items-center gap-1 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <ChevronUp size={20} />
@@ -1365,13 +2211,13 @@ export default function Portfolio() {
       {/* Footer */}
       <SpotlightCard
         as="footer"
-        className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] mt-0"
+        className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-8 pb-[calc(2rem+env(safe-area-inset-bottom))] mt-0 relative z-10"
       >
         {/* Rubber Duck Animation */}
         <div className="absolute -top-4 md:top-auto md:bottom-0 left-0 w-full h-16 pointer-events-none z-30">
           <div className="absolute top-16 left-0 animate-fly">
             <div className="relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-yellow-400/40 blur-xl rounded-full"></div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 blur-xl rounded-full" style={{ backgroundColor: 'var(--duck-glow)' }}></div>
               <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1">
                 <div
                   className="absolute w-1.5 h-1.5 border border-cyan-400/60 rounded-full animate-particle"
@@ -1408,12 +2254,20 @@ export default function Portfolio() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              onClick={(e) => {
+                triggerHaptic();
+                triggerConfetti(e.clientX, e.clientY);
+              }}
             >
               <Linkedin size={20} />
             </a>
             <a
               href={`mailto:${personalInfo.email}`}
               className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              onClick={(e) => {
+                triggerHaptic();
+                triggerConfetti(e.clientX, e.clientY);
+              }}
             >
               <Mail size={20} />
             </a>
