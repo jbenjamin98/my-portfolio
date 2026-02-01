@@ -80,14 +80,26 @@ const greetings = [
 // --- HELPER COMPONENTS ---
 
 const AnimatedCounter = ({ value }) => {
-  const [display, setDisplay] = useState(() => {
-    const match = value.match(/^([^0-9]*)([0-9,.]+)(.*)$/);
-    return match ? `${match[1]}0${match[3]}` : value;
-  });
   const elementRef = useRef(null);
   const hasAnimated = useRef(false);
 
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    const match = value.match(/^([^0-9]*)([0-9,.]+)(.*)$/);
+    if (match && !hasAnimated.current) {
+      const [, prefix, , suffix] = match;
+      element.textContent = `${prefix}0${suffix}`;
+    } else {
+      element.textContent = value;
+    }
+  }, [value]);
+
   useEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
     const match = value.match(/^([^0-9]*)([0-9,.]+)(.*)$/);
     if (!match) return;
 
@@ -106,12 +118,12 @@ const AnimatedCounter = ({ value }) => {
       const ease = 1 - Math.pow(1 - progress, 4); // Ease out quart
 
       const current = Math.floor(ease * target);
-      setDisplay(`${prefix}${current.toLocaleString()}${suffix}`);
+      element.textContent = `${prefix}${current.toLocaleString()}${suffix}`;
 
       if (progress < 1) {
         animationFrameId = requestAnimationFrame(animate);
       } else {
-        setDisplay(value);
+        element.textContent = value;
       }
     };
 
@@ -125,9 +137,7 @@ const AnimatedCounter = ({ value }) => {
       { threshold: 0.1 },
     );
 
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
-    }
+    observer.observe(element);
 
     return () => {
       observer.disconnect();
@@ -135,41 +145,13 @@ const AnimatedCounter = ({ value }) => {
     };
   }, [value]);
 
-  return <span ref={elementRef}>{display}</span>;
+  return <span ref={elementRef} />;
 };
 
 // Load all images from assets directory
 const certImages = import.meta.glob("./assets/*.{png,jpg,jpeg,svg,webp}", {
   eager: false,
 });
-
-const ScrollVelocityTilt = () => {
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-    let velocity = 0;
-    let rafId;
-
-    const update = () => {
-      const currentScrollY = window.scrollY;
-      const targetVelocity = currentScrollY - lastScrollY;
-      lastScrollY = currentScrollY;
-
-      velocity += (targetVelocity - velocity) * 0.1;
-      const tilt = Math.max(-10, Math.min(10, velocity * 0.1));
-
-      if (Math.abs(tilt) > 0.01) {
-        document.documentElement.style.setProperty('--scroll-tilt', `${tilt}deg`);
-      } else {
-        document.documentElement.style.setProperty('--scroll-tilt', '0deg');
-      }
-      rafId = requestAnimationFrame(update);
-    };
-
-    rafId = requestAnimationFrame(update);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-  return null;
-};
 
 const noiseUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`;
 
@@ -184,10 +166,10 @@ const SpotlightCard = ({
   const divRef = useRef(null);
   const overlayRef = useRef(null);
   
-  const shouldScrollTilt = !noScrollTilt && Component !== "header" && Component !== "footer";
-
   const handleMouseMove = (e) => {
     if (!divRef.current || !overlayRef.current) return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+
     const rect = divRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -228,60 +210,13 @@ const SpotlightCard = ({
     if (props.onMouseLeave) props.onMouseLeave(e);
   };
 
-  useEffect(() => {
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-    if (!isTouch) return;
-
-    let animationFrameId;
-    
-    const updateSpotlight = () => {
-      if (!divRef.current || !overlayRef.current) return;
-      
-      const rect = divRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      
-      if (rect.top < viewportHeight && rect.bottom > 0) {
-        const x = rect.width / 2;
-        const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
-        const y = progress * rect.height;
-        
-        overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
-        overlayRef.current.style.opacity = "0.6";
-      }
-    };
-
-    const onScroll = () => {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = requestAnimationFrame(updateSpotlight);
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          window.addEventListener("scroll", onScroll, { passive: true });
-          updateSpotlight();
-        } else {
-          window.removeEventListener("scroll", onScroll);
-          cancelAnimationFrame(animationFrameId);
-        }
-      });
-    });
-    if (divRef.current) observer.observe(divRef.current);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
   return (
     <Component
       ref={divRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative group overflow-hidden ${className} ${shouldScrollTilt ? "scroll-tilt-card" : ""}`}
+      className={`relative group overflow-hidden ${className}`}
       {...props}
     >
       <div
@@ -362,12 +297,6 @@ const Typewriter = ({ words }) => {
   const [index, setIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [reverse, setReverse] = useState(false);
-  const [blink, setBlink] = useState(true);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setBlink(!blink), 500);
-    return () => clearTimeout(timeout);
-  }, [blink]);
 
   useEffect(() => {
     if (subIndex === words[index].length + 1 && !reverse) {
@@ -395,7 +324,7 @@ const Typewriter = ({ words }) => {
     <span>
       {words[index].substring(0, subIndex)}
       <span
-        className={`${blink ? "opacity-100" : "opacity-0"} transition-opacity duration-100 text-blue-600 dark:text-blue-400`}
+        className="animate-blink text-blue-600 dark:text-blue-400"
       >
         {'\u2588'}
       </span>
@@ -521,16 +450,21 @@ const BackToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    let animationFrameId;
+
     const toggleVisibility = () => {
-      if (window.scrollY > 400) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        setIsVisible(window.scrollY > 400);
+      });
     };
 
     window.addEventListener("scroll", toggleVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", toggleVisibility);
+    
+    return () => {
+      window.removeEventListener("scroll", toggleVisibility);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   const scrollToTop = () => {
@@ -558,11 +492,13 @@ const BackToTopButton = () => {
 
 const TimelineScrollLine = () => {
   const lineRef = useRef(null);
-  const [height, setHeight] = useState(0);
+  const fillRef = useRef(null);
 
   useEffect(() => {
+    let animationFrameId;
+
     const updateHeight = () => {
-      if (!lineRef.current) return;
+      if (!lineRef.current || !fillRef.current) return;
       
       const rect = lineRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
@@ -571,13 +507,21 @@ const TimelineScrollLine = () => {
       const scrolled = triggerPoint - rect.top;
       const newHeight = Math.max(0, Math.min(scrolled, rect.height));
       
-      setHeight(newHeight);
+      fillRef.current.style.height = `${newHeight}px`;
     };
 
-    window.addEventListener("scroll", updateHeight, { passive: true });
+    const onScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(updateHeight);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     updateHeight();
 
-    return () => window.removeEventListener("scroll", updateHeight);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
@@ -590,8 +534,9 @@ const TimelineScrollLine = () => {
       }}
     >
       <div 
+        ref={fillRef}
         className="w-full bg-gradient-to-b from-blue-600 via-purple-500 to-blue-600"
-        style={{ height: `${height}px`, transition: "height 0.1s linear" }}
+        style={{ height: '0px', transition: "height 0.1s linear" }}
       />
     </div>
   );
@@ -602,20 +547,22 @@ const TimelineDot = () => {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    const updateState = () => {
-      if (!dotRef.current) return;
-      
-      const rect = dotRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const triggerPoint = viewportHeight * 0.6;
-      
-      setIsActive(rect.top < triggerPoint);
-    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+          setIsActive(true);
+        } else {
+          setIsActive(false);
+        }
+      },
+      { rootMargin: "0px 0px -40% 0px", threshold: 0 }
+    );
 
-    window.addEventListener("scroll", updateState, { passive: true });
-    updateState();
+    if (dotRef.current) {
+      observer.observe(dotRef.current);
+    }
 
-    return () => window.removeEventListener("scroll", updateState);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -660,25 +607,38 @@ const RevealOnScroll = ({ children, delay = 0 }) => {
 };
 
 const ScrollProgress = () => {
-  const [width, setWidth] = useState(0);
+  const barRef = useRef(null);
 
   useEffect(() => {
+    let animationFrameId;
+
     const handleScroll = () => {
+      if (!barRef.current) return;
       const totalHeight =
         document.documentElement.scrollHeight - window.innerHeight;
       const scrollPosition = window.scrollY;
       const percent = (scrollPosition / totalHeight) * 100;
-      setWidth(percent);
+      barRef.current.style.width = `${percent}%`;
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    const onScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(handleScroll);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
     <div className="fixed top-0 left-0 h-1 z-50 w-full bg-transparent pointer-events-none">
       <div
+        ref={barRef}
         className="h-full bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 transition-all duration-100 ease-out opacity-80"
-        style={{ width: `${width}%` }}
+        style={{ width: '0%' }}
       />
     </div>
   );
@@ -692,35 +652,58 @@ const MatrixRain = () => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', resize);
-    resize();
-
-    const columns = Math.floor(canvas.width / 20);
-    const drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height / 20));
+    let animationFrameId;
+    let drops = [];
+    const fontSize = 15;
+    const columnWidth = 20;
     const chars = "01"; 
 
-    const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#0F0';
-      ctx.font = '15px monospace';
+    const init = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const columns = Math.ceil(canvas.width / columnWidth);
+      drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height / columnWidth));
+    };
+
+    let resizeTimeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(init, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+    init();
+
+    let lastTime = 0;
+    const fps = 24;
+    const interval = 1000 / fps;
+
+    const draw = (time) => {
+      const deltaTime = time - lastTime;
       
-      for (let i = 0; i < drops.length; i++) {
-        const text = chars.charAt(Math.floor(Math.random() * chars.length));
-        ctx.fillText(text, i * 20, drops[i] * 20);
-        if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
+      if (deltaTime >= interval) {
+        lastTime = time - (deltaTime % interval);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0F0';
+        ctx.font = `${fontSize}px monospace`;
+        
+        for (let i = 0; i < drops.length; i++) {
+          const text = chars.charAt(Math.floor(Math.random() * chars.length));
+          ctx.fillText(text, i * columnWidth, drops[i] * columnWidth);
+          if (drops[i] * columnWidth > canvas.height && Math.random() > 0.975) drops[i] = 0;
+          drops[i]++;
+        }
       }
+      animationFrameId = requestAnimationFrame(draw);
     };
     
-    const interval = setInterval(draw, 50);
+    animationFrameId = requestAnimationFrame(draw);
     return () => {
-      clearInterval(interval);
-      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 
@@ -733,6 +716,8 @@ const CyberpunkBackground = () => {
   const bgRef = useRef(null);
 
   useEffect(() => {
+    if (window.matchMedia("(max-width: 768px)").matches) return;
+
     const handleScroll = () => {
       const scrolled = window.scrollY;
       if (bgRef.current) bgRef.current.style.transform = `translateY(${scrolled * 0.05}px)`;
@@ -779,6 +764,8 @@ const ParallaxBackground = ({ theme }) => {
   const blob3Ref = useRef(null);
 
   useEffect(() => {
+    if (window.matchMedia("(max-width: 768px)").matches) return;
+
     let animationFrameId;
     const handleScroll = () => {
       animationFrameId = requestAnimationFrame(() => {
@@ -848,7 +835,7 @@ const PullToRefresh = () => {
         const easedPull = 1 - Math.pow(1 - Math.min(distance / (state.threshold * 1.5), 1), 3);
         const indicatorY = easedPull * state.threshold;
         setStyle({ transform: `translateY(${indicatorY}px)`, opacity: 1 });
-        setRotation(Math.min(distance / state.threshold, 1) * 360);
+        setRotation((distance / state.threshold) * 360);
       } else {
         state.isPulling = false;
       }
@@ -872,7 +859,7 @@ const PullToRefresh = () => {
       state.startY = 0;
     };
 
-    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('touchcancel', handleTouchEnd);
@@ -887,18 +874,20 @@ const PullToRefresh = () => {
 
   return (
     <div
-      className="fixed top-[-40px] left-0 right-0 z-50 flex justify-center items-center text-slate-500 dark:text-slate-400 transition-transform duration-300 ease-out"
-      style={{ height: '40px', pointerEvents: 'none', ...style }}
+      className="fixed top-[-60px] left-0 right-0 z-50 flex justify-center items-center pointer-events-none transition-transform duration-300 ease-out"
+      style={{ height: '60px', ...style }}
     >
-      {icon === 'spinner' ? (
-        <div className="animate-spin">
-          <img src={duckImg} alt="Loading" className="w-8 h-8 object-contain" />
-        </div>
-      ) : (
-        <div style={{ transform: `rotate(${rotation}deg)` }}>
-          <img src={duckImg} alt="Pull to refresh" className="w-8 h-8 object-contain" />
-        </div>
-      )}
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 pull-refresh-circle">
+        {icon === 'spinner' ? (
+          <div className="animate-spin">
+            <img src={duckImg} alt="Loading" className="w-6 h-6 object-contain" />
+          </div>
+        ) : (
+          <div style={{ transform: `rotate(${rotation}deg)` }}>
+            <img src={duckImg} alt="Pull to refresh" className="w-6 h-6 object-contain" />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -1254,7 +1243,6 @@ export default function Portfolio() {
     <div className="min-h-[100dvh] text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans relative">
       <PullToRefresh />
       <ScrollProgress />
-      <ScrollVelocityTilt />
       <ParallaxBackground theme={specialTheme} />
       <BackToTopButton />
       {/* Styles Injection for Animations */}
@@ -1289,6 +1277,13 @@ export default function Portfolio() {
         .animate-gradient-x {
           background-size: 200% 200%;
           animation: gradient-x 3s ease infinite;
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 1s step-end infinite;
         }
         @keyframes nav-glow-pulse {
           0%, 100% { box-shadow: 0 0 20px rgba(37, 99, 235, 0.6); }
@@ -1378,6 +1373,11 @@ export default function Portfolio() {
         .animate-float-card {
           animation: float-card 6s ease-in-out infinite;
         }
+        @media (max-width: 768px) {
+          .animate-float-card {
+            animation: none;
+          }
+        }
         @keyframes float-button {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-6px); }
@@ -1411,14 +1411,6 @@ export default function Portfolio() {
         @keyframes spotlight-pulse {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
-        }
-        
-        @media (pointer: coarse) {
-          .scroll-tilt-card {
-            transform: perspective(1000px) rotateX(var(--scroll-tilt, 0deg)) translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1));
-            transition: transform 0.2s ease-out;
-            will-change: transform;
-          }
         }
         
         /* Custom Scrollbar */
@@ -1587,6 +1579,9 @@ export default function Portfolio() {
         }
         .animate-sun-glitch {
             animation: sun-glitch 4s infinite step-end;
+        }
+        .pull-refresh-circle {
+          box-shadow: 0 0 15px var(--duck-glow) !important;
         }
         html.cyberpunk h1, html.cyberpunk h2, html.cyberpunk h3, html.cyberpunk h4, html.cyberpunk h5, html.cyberpunk h6 {
           font-family: 'Courier New', Courier, monospace !important;
