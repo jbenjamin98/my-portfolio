@@ -690,7 +690,7 @@ export default function Portfolio() {
   }, [deferredSkillFilter]);
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300 font-sans">
       <ScrollProgress />
       <BackToTopButton />
       {/* Styles Injection for Animations */}
