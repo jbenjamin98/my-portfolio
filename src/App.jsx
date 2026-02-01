@@ -1006,6 +1006,15 @@ export default function Portfolio() {
     if (metaViewport && !metaViewport.content.includes("viewport-fit=cover")) {
       metaViewport.content += ", viewport-fit=cover";
     }
+
+    // Add apple-touch-icon for Safari mobile
+    let appleTouchIcon = document.querySelector("link[rel='apple-touch-icon']");
+    if (!appleTouchIcon) {
+      appleTouchIcon = document.createElement("link");
+      appleTouchIcon.rel = "apple-touch-icon";
+      document.head.appendChild(appleTouchIcon);
+    }
+    appleTouchIcon.href = duckImg;
   }, [darkMode, specialTheme]);
 
   const toggleTheme = (theme) => {
