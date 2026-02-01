@@ -35,7 +35,10 @@ import {
   Lightbulb,
   Share2,
   RotateCcw,
+  BookOpen,
 } from "lucide-react";
+import headshotImg from "./assets/headshot.jpg";
+import duckImg from "./assets/duck.png";
 import resumeData from "./assets/resumeData.json";
 
 // --- RESUME DATA ---
@@ -139,7 +142,7 @@ const AnimatedCounter = ({ value }) => {
 
 // Load all images from assets directory
 const certImages = import.meta.glob("./assets/*.{png,jpg,jpeg,svg,webp}", {
-  eager: true,
+  eager: false,
 });
 
 const ScrollVelocityTilt = () => {
@@ -254,10 +257,21 @@ const SpotlightCard = ({
       animationFrameId = requestAnimationFrame(updateSpotlight);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    updateSpotlight();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          window.addEventListener("scroll", onScroll, { passive: true });
+          updateSpotlight();
+        } else {
+          window.removeEventListener("scroll", onScroll);
+          cancelAnimationFrame(animationFrameId);
+        }
+      });
+    });
+    if (divRef.current) observer.observe(divRef.current);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(animationFrameId);
     };
@@ -286,8 +300,15 @@ const SpotlightCard = ({
 
 const CertificationItem = ({ cert, index = 0 }) => {
   // Resolve image path
-  const imagePath = `./assets/${cert.logo}`;
-  const imageSrc = certImages[imagePath]?.default;
+  const [imageSrc, setImageSrc] = useState(null);
+
+  useEffect(() => {
+    const imagePath = `./assets/${cert.logo}`;
+    const loader = certImages[imagePath];
+    if (loader) {
+      loader().then((mod) => setImageSrc(mod.default));
+    }
+  }, [cert.logo]);
 
   return (
     <div className="h-full animate-float-card" style={{ animationDelay: `-${index * 0.5}s` }}>
@@ -872,11 +893,11 @@ const PullToRefresh = () => {
     >
       {icon === 'spinner' ? (
         <div className="animate-spin">
-          <Zap size={24} className="text-blue-500" />
+          <img src={duckImg} alt="Loading" className="w-8 h-8 object-contain" />
         </div>
       ) : (
         <div style={{ transform: `rotate(${rotation}deg)` }}>
-          <ChevronDown size={24} />
+          <img src={duckImg} alt="Pull to refresh" className="w-8 h-8 object-contain" />
         </div>
       )}
     </div>
@@ -895,6 +916,7 @@ export default function Portfolio() {
   const [darkMode, setDarkMode] = useDarkMode();
   const [specialTheme, setSpecialTheme] = useState(null);
   const [glitchActive, setGlitchActive] = useState(false);
+  const [readingMode, setReadingMode] = useState(false);
 
   useEffect(() => {
     let timeoutId;
@@ -916,6 +938,14 @@ export default function Portfolio() {
       root.classList.remove("dark");
     }
   }, [darkMode, specialTheme]);
+
+  useEffect(() => {
+    if (readingMode) {
+      document.documentElement.classList.add("reading-mode");
+    } else {
+      document.documentElement.classList.remove("reading-mode");
+    }
+  }, [readingMode]);
 
   useEffect(() => {
     // Update theme-color meta tag for mobile browsers to match the header/background
@@ -1603,6 +1633,19 @@ export default function Portfolio() {
           text-shadow: -2px 0 #00f3ff;
           animation: glitch-anim-2 2s infinite linear alternate-reverse;
         }
+        
+        /* Reading Mode */
+        html.reading-mode main {
+          max-width: 768px !important;
+        }
+        html.reading-mode p, html.reading-mode li {
+          font-size: 1.125rem !important;
+          line-height: 1.8 !important;
+        }
+        
+        /* Hide distractions in reading mode */
+        html.reading-mode .fixed.inset-0.z-0 { opacity: 0.1 !important; }
+        html.reading-mode .pointer-events-none.absolute.-inset-px { display: none !important; }
       `}</style>
 
       {/* Header */}
@@ -1642,6 +1685,16 @@ export default function Portfolio() {
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setReadingMode(!readingMode);
+                triggerHaptic();
+              }}
+              className={`p-2 rounded-full transition-colors ${readingMode ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"}`}
+              title="Reading Mode"
+            >
+              <BookOpen size={20} />
+            </button>
             <button
               onClick={() => {
                 if (navigator.share) {
@@ -1684,13 +1737,11 @@ export default function Portfolio() {
         >
           <div className="flex flex-col lg:flex-row justify-between gap-6 lg:gap-10 items-center">
             <div className="flex flex-col items-center sm:flex-row sm:items-center gap-6">
-              {certImages["./assets/headshot.jpg"]?.default && (
-                <img
-                  src={certImages["./assets/headshot.jpg"]?.default}
-                  alt={personalInfo.name}
-                  className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
-                />
-              )}
+              <img
+                src={headshotImg}
+                alt={personalInfo.name}
+                className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
+              />
               <div className="text-center sm:text-left">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
                   <span className="flex items-center gap-2">
@@ -1960,7 +2011,7 @@ export default function Portfolio() {
                   ) : (
                     <div
                       ref={scrollContainerRef}
-                      className={`relative w-full overflow-x-auto py-2 carousel-scrollbar ${isDragging ? "cursor-grabbing" : "cursor-grab lg:cursor-auto"}`}
+                      className={`relative w-full overflow-x-auto py-2 carousel-scrollbar ${isDragging ? "cursor-grabbing" : "cursor-grab lg:cursor-auto"} ${isPaused ? "snap-x snap-mandatory" : ""}`}
                       onMouseEnter={() => setIsPaused(true)}
                       onMouseLeave={handleMouseLeave}
                       onMouseDown={handleMouseDown}
@@ -1981,7 +2032,7 @@ export default function Portfolio() {
                           (cert, idx) => (
                             <div
                               key={`carousel-${idx}`}
-                              className="w-[140px] md:w-[280px] shrink-0 carousel-card will-change-transform"
+                              className="w-[140px] md:w-[280px] shrink-0 carousel-card will-change-transform snap-center"
                             >
                               <CertificationItem cert={cert} index={idx} />
                             </div>
@@ -2232,13 +2283,11 @@ export default function Portfolio() {
                   style={{ top: "0px", left: "-8px", animationDelay: "0.2s" }}
                 ></div>
               </div>
-              {certImages["./assets/duck.png"]?.default && (
-                <img
-                  src={certImages["./assets/duck.png"]?.default}
-                  alt="Rubber Duck"
-                  className="w-8 h-8 object-contain drop-shadow-sm relative z-10 animate-bob"
-                />
-              )}
+              <img
+                src={duckImg}
+                alt="Rubber Duck"
+                className="w-8 h-8 object-contain drop-shadow-sm relative z-10 animate-bob"
+              />
             </div>
           </div>
         </div>
