@@ -33,9 +33,7 @@ import {
   GalleryHorizontal,
   Linkedin,
   Lightbulb,
-  Share2,
   RotateCcw,
-  BookOpen,
 } from "lucide-react";
 import headshotImg from "./assets/headshot.jpg";
 import duckImg from "./assets/duck.png";
@@ -321,6 +319,7 @@ const CertificationItem = ({ cert, index = 0 }) => {
                 alt={cert.name}
                 className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
                 loading="lazy"
+                draggable={false}
               />
             ) : (
               <div className="w-full h-full bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400">
@@ -916,7 +915,6 @@ export default function Portfolio() {
   const [darkMode, setDarkMode] = useDarkMode();
   const [specialTheme, setSpecialTheme] = useState(null);
   const [glitchActive, setGlitchActive] = useState(false);
-  const [readingMode, setReadingMode] = useState(false);
 
   useEffect(() => {
     let timeoutId;
@@ -938,14 +936,6 @@ export default function Portfolio() {
       root.classList.remove("dark");
     }
   }, [darkMode, specialTheme]);
-
-  useEffect(() => {
-    if (readingMode) {
-      document.documentElement.classList.add("reading-mode");
-    } else {
-      document.documentElement.classList.remove("reading-mode");
-    }
-  }, [readingMode]);
 
   useEffect(() => {
     // Update theme-color meta tag for mobile browsers to match the header/background
@@ -996,8 +986,8 @@ export default function Portfolio() {
 
   const scrollContainerRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeftStart, setScrollLeftStart] = useState(0);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
   const [isVolunteerExpanded, setIsVolunteerExpanded] = useState(() => {
     if (typeof window !== "undefined") {
       return window.innerWidth >= 768;
@@ -1186,8 +1176,8 @@ export default function Portfolio() {
     setIsDragging(true);
     setIsPaused(true);
     if (scrollContainerRef.current) {
-      setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
-      setScrollLeftStart(scrollContainerRef.current.scrollLeft);
+      startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
+      scrollLeftStart.current = scrollContainerRef.current.scrollLeft;
     }
   };
 
@@ -1196,19 +1186,26 @@ export default function Portfolio() {
     e.preventDefault();
     if (scrollContainerRef.current) {
       const x = e.pageX - scrollContainerRef.current.offsetLeft;
-      const walk = (x - startX) * 2;
-      scrollContainerRef.current.scrollLeft = scrollLeftStart - walk;
+      const walk = (x - startX.current) * 2;
+      scrollContainerRef.current.scrollLeft = scrollLeftStart.current - walk;
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    setIsPaused(false);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e) => {
     setIsDragging(false);
-    setIsPaused(false);
+    if (e.buttons === 1) {
+      const onMouseUp = () => {
+        setIsPaused(false);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+      window.addEventListener('mouseup', onMouseUp);
+    } else {
+      setIsPaused(false);
+    }
   };
 
   const handleTouchStart = () => {
@@ -1435,14 +1432,6 @@ export default function Portfolio() {
         .carousel-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .carousel-scrollbar::-webkit-scrollbar { display: none; }
         
-        @media (min-width: 1024px) {
-          .carousel-scrollbar { -ms-overflow-style: auto; scrollbar-width: auto; }
-          .carousel-scrollbar::-webkit-scrollbar { display: block; height: 8px; }
-          .carousel-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .carousel-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(to right, #2563eb, #a855f7, #2563eb); border-radius: 4px; }
-          .carousel-scrollbar::-webkit-scrollbar-thumb:hover { background: linear-gradient(to right, #1d4ed8, #9333ea, #1d4ed8); }
-        }
-        
         /* Text Selection */
         ::selection { background-color: rgba(168, 85, 247, 0.5); color: white; }
         html.retro ::selection { background-color: #00ff00; color: #000000; }
@@ -1633,19 +1622,6 @@ export default function Portfolio() {
           text-shadow: -2px 0 #00f3ff;
           animation: glitch-anim-2 2s infinite linear alternate-reverse;
         }
-        
-        /* Reading Mode */
-        html.reading-mode main {
-          max-width: 768px !important;
-        }
-        html.reading-mode p, html.reading-mode li {
-          font-size: 1.125rem !important;
-          line-height: 1.8 !important;
-        }
-        
-        /* Hide distractions in reading mode */
-        html.reading-mode .fixed.inset-0.z-0 { opacity: 0.1 !important; }
-        html.reading-mode .pointer-events-none.absolute.-inset-px { display: none !important; }
       `}</style>
 
       {/* Header */}
@@ -1680,37 +1656,11 @@ export default function Portfolio() {
             >
               JACOB BENJAMIN
             </span>
-            <span className="text-slate-400 dark:text-slate-500 font-normal ml-2">
+            <span className="text-slate-400 dark:text-slate-500 font-normal ml-2 text-xs sm:text-lg">
               <Typewriter words={greetings} />
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setReadingMode(!readingMode);
-                triggerHaptic();
-              }}
-              className={`p-2 rounded-full transition-colors ${readingMode ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400" : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"}`}
-              title="Reading Mode"
-            >
-              <BookOpen size={20} />
-            </button>
-            <button
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: personalInfo.name,
-                    text: `Check out ${personalInfo.name}'s portfolio!`,
-                    url: window.location.href,
-                  }).catch(() => {});
-                  triggerHaptic();
-                }
-              }}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
-              title="Share"
-            >
-              <Share2 size={20} />
-            </button>
             <button
               onClick={() => {
                 if (specialTheme) {
@@ -1742,7 +1692,7 @@ export default function Portfolio() {
                 alt={personalInfo.name}
                 className="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-white dark:border-slate-700 shadow-md transition-transform duration-300 hover:scale-110"
               />
-              <div className="text-center sm:text-left">
+              <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
                 <div className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
                   <span className="flex items-center gap-2">
                     <MapPin size={16} /> {personalInfo.location}
@@ -2011,7 +1961,7 @@ export default function Portfolio() {
                   ) : (
                     <div
                       ref={scrollContainerRef}
-                      className={`relative w-full overflow-x-auto py-2 carousel-scrollbar ${isDragging ? "cursor-grabbing" : "cursor-grab lg:cursor-auto"} ${isPaused ? "snap-x snap-mandatory" : ""}`}
+                      className={`relative w-full overflow-x-auto py-2 carousel-scrollbar select-none ${isDragging ? "cursor-grabbing" : "cursor-grab lg:cursor-auto"}`}
                       onMouseEnter={() => setIsPaused(true)}
                       onMouseLeave={handleMouseLeave}
                       onMouseDown={handleMouseDown}
@@ -2032,7 +1982,7 @@ export default function Portfolio() {
                           (cert, idx) => (
                             <div
                               key={`carousel-${idx}`}
-                              className="w-[140px] md:w-[280px] shrink-0 carousel-card will-change-transform snap-center"
+                              className="w-[140px] md:w-[280px] shrink-0 carousel-card will-change-transform"
                             >
                               <CertificationItem cert={cert} index={idx} />
                             </div>
