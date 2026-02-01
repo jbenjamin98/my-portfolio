@@ -176,6 +176,7 @@ const SpotlightCard = ({
 
     overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
     overlayRef.current.style.opacity = "1";
+    divRef.current.style.borderColor = "rgba(59, 130, 246, 0.5)";
 
     if (enableTilt) {
       const centerX = rect.width / 2;
@@ -204,6 +205,9 @@ const SpotlightCard = ({
     if (overlayRef.current) {
       overlayRef.current.style.opacity = "0";
       overlayRef.current.style.animation = "";
+    }
+    if (divRef.current) {
+      divRef.current.style.borderColor = "";
     }
     if (divRef.current && enableTilt) {
       divRef.current.style.transform = "";
@@ -268,14 +272,14 @@ const SpotlightCard = ({
       className={`relative group overflow-hidden ${className}`}
       {...props}
     >
+      <div className="relative z-10 h-full">{children}</div>
       <div
         ref={overlayRef}
-        className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0"
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0 z-20"
         style={{
           background: `radial-gradient(600px circle at 50% 50%, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`,
         }}
       />
-      <div className="relative z-10 h-full">{children}</div>
     </Component>
   );
 };
@@ -1182,31 +1186,56 @@ export default function Portfolio() {
     const container = scrollContainerRef.current;
     if (!container || certView !== "carousel") return;
 
+    let cards = Array.from(container.getElementsByClassName("carousel-card"));
+    let cardCenters = [];
+    let scrollWidth = 0;
+    let clientWidth = 0;
+
+    const updateMetrics = () => {
+      scrollWidth = container.scrollWidth;
+      clientWidth = container.clientWidth;
+      cards = Array.from(container.getElementsByClassName("carousel-card"));
+      cardCenters = cards.map(card => card.offsetLeft + card.offsetWidth / 2);
+    };
+
+    // Initial calculation
+    updateMetrics();
+    window.addEventListener('resize', updateMetrics);
+
     let animationId;
     const scroll = () => {
       if (!isPausedRef.current) {
         // Infinite scroll logic: reset when we've scrolled past the first set
-        if (container.scrollLeft >= container.scrollWidth / 2) {
-          container.scrollLeft -= container.scrollWidth / 2;
+        if (container.scrollLeft >= scrollWidth / 2) {
+          container.scrollLeft -= scrollWidth / 2;
         } else {
           container.scrollLeft += 1; // Scroll speed
         }
       }
 
-      const center = container.scrollLeft + container.clientWidth / 2;
-      const cards = container.getElementsByClassName("carousel-card");
+      const center = container.scrollLeft + clientWidth / 2;
+      
       for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
-        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+        const cardCenter = cardCenters[i];
         const dist = Math.abs(center - cardCenter);
-        const maxDist = container.clientWidth / 2;
-        const scale = Math.max(0.85, 1 - (dist / maxDist) * 0.15);
-        card.style.transform = `scale(${scale})`;
+        
+        if (dist < clientWidth) {
+          const maxDist = clientWidth / 2;
+          const scale = Math.max(0.85, 1 - (dist / maxDist) * 0.15);
+          card.style.transform = `scale(${scale})`;
+        } else if (card.style.transform !== 'scale(0.85)') {
+          card.style.transform = 'scale(0.85)';
+        }
       }
       animationId = requestAnimationFrame(scroll);
     };
+    
     animationId = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(animationId);
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', updateMetrics);
+    };
   }, [certView]);
 
   const handleMouseDown = (e) => {
