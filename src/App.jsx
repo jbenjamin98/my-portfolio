@@ -191,6 +191,7 @@ const SpotlightCard = ({
   };
 
   const handleMouseEnter = (e) => {
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     if (overlayRef.current) {
       overlayRef.current.style.opacity = "1";
       overlayRef.current.style.animation = "spotlight-pulse 3s ease-in-out infinite";
@@ -199,6 +200,7 @@ const SpotlightCard = ({
   };
 
   const handleMouseLeave = (e) => {
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     if (overlayRef.current) {
       overlayRef.current.style.opacity = "0";
       overlayRef.current.style.animation = "";
@@ -209,6 +211,53 @@ const SpotlightCard = ({
     }
     if (props.onMouseLeave) props.onMouseLeave(e);
   };
+
+  useEffect(() => {
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (!isTouch) return;
+
+    let animationFrameId;
+    
+    const updateSpotlight = () => {
+      if (!divRef.current || !overlayRef.current) return;
+      
+      const rect = divRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      if (rect.top < viewportHeight && rect.bottom > 0) {
+        const x = rect.width / 2;
+        const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+        const y = progress * rect.height;
+        
+        overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
+        overlayRef.current.style.opacity = "0.6";
+      }
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(updateSpotlight);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          window.addEventListener("scroll", onScroll, { passive: true });
+          updateSpotlight();
+        } else {
+          window.removeEventListener("scroll", onScroll);
+          cancelAnimationFrame(animationFrameId);
+        }
+      });
+    });
+    if (divRef.current) observer.observe(divRef.current);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   return (
     <Component
