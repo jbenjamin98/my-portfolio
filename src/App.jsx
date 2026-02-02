@@ -74,7 +74,7 @@ const greetings = [
   "Greetings!",
   "Agile Leader.",
   "Nice to see you!",
-  "Problem Solver."
+  "Problem Solver.",
 ];
 
 // --- HELPER COMPONENTS ---
@@ -153,8 +153,6 @@ const certImages = import.meta.glob("./assets/*.{png,jpg,jpeg,svg,webp}", {
   eager: false,
 });
 
-const noiseUrl = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E")`;
-
 const SpotlightCard = ({
   children,
   className = "",
@@ -165,7 +163,7 @@ const SpotlightCard = ({
 }) => {
   const divRef = useRef(null);
   const overlayRef = useRef(null);
-  
+
   const handleMouseMove = (e) => {
     if (!divRef.current || !overlayRef.current) return;
     if (window.matchMedia("(pointer: coarse)").matches) return;
@@ -174,7 +172,7 @@ const SpotlightCard = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
+    overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%)`;
     overlayRef.current.style.opacity = "1";
     divRef.current.style.borderColor = "rgba(59, 130, 246, 0.5)";
 
@@ -183,7 +181,7 @@ const SpotlightCard = ({
       const centerY = rect.height / 2;
       const rotateX = ((y - centerY) / centerY) * -3; // Max 3 deg rotation
       const rotateY = ((x - centerX) / centerX) * 3;
-      
+
       divRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
       divRef.current.style.transition = "transform 0.1s ease-out";
     }
@@ -195,7 +193,8 @@ const SpotlightCard = ({
     if (window.matchMedia("(pointer: coarse)").matches) return;
     if (overlayRef.current) {
       overlayRef.current.style.opacity = "1";
-      overlayRef.current.style.animation = "spotlight-pulse 3s ease-in-out infinite";
+      overlayRef.current.style.animation =
+        "spotlight-pulse 3s ease-in-out infinite";
     }
     if (props.onMouseEnter) props.onMouseEnter(e);
   };
@@ -221,18 +220,19 @@ const SpotlightCard = ({
     if (!isTouch) return;
 
     let animationFrameId;
-    
+
     const updateSpotlight = () => {
       if (!divRef.current || !overlayRef.current) return;
-      
+
       const rect = divRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      
+
       if (rect.top < viewportHeight && rect.bottom > 0) {
         const x = rect.width / 2;
-        const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+        const progress =
+          (viewportHeight - rect.top) / (viewportHeight + rect.height);
         const y = progress * rect.height;
-        
+
         overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
         overlayRef.current.style.opacity = "0.6";
       }
@@ -277,7 +277,7 @@ const SpotlightCard = ({
         ref={overlayRef}
         className="pointer-events-none absolute -inset-px transition-opacity duration-300 opacity-0 z-20"
         style={{
-          background: `radial-gradient(600px circle at 50% 50%, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`,
+          background: `radial-gradient(600px circle at 50% 50%, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%)`,
         }}
       />
     </Component>
@@ -297,7 +297,10 @@ const CertificationItem = ({ cert, index = 0 }) => {
   }, [cert.logo]);
 
   return (
-    <div className="h-full animate-float-card" style={{ animationDelay: `-${index * 0.5}s` }}>
+    <div
+      className="h-full animate-float-card"
+      style={{ animationDelay: `-${index * 0.5}s` }}
+    >
       <SpotlightCard className="h-full p-3 md:p-6 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm bg-slate-50 dark:bg-slate-900 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
         <div className="flex flex-col items-center justify-center h-full">
           <div className="w-12 h-12 md:w-24 md:h-24 mb-3 md:mb-4 flex items-center justify-center">
@@ -376,10 +379,8 @@ const Typewriter = ({ words }) => {
   return (
     <span>
       {words[index].substring(0, subIndex)}
-      <span
-        className="animate-blink text-blue-600 dark:text-blue-400"
-      >
-        {'\u2588'}
+      <span className="animate-blink text-blue-600 dark:text-blue-400">
+        {"\u2588"}
       </span>
     </span>
   );
@@ -414,18 +415,19 @@ const TestimonialCard = ({ item }) => {
 };
 
 const triggerConfetti = (x, y) => {
-  const colors = ['#2563eb', '#a855f7', '#3b82f6', '#ef4444', '#eab308'];
+  const colors = ["#2563eb", "#a855f7", "#3b82f6", "#ef4444", "#eab308"];
   for (let i = 0; i < 20; i++) {
-    const el = document.createElement('div');
-    el.style.position = 'fixed';
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.style.width = '6px';
-    el.style.height = '6px';
-    el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-    el.style.borderRadius = '50%';
-    el.style.pointerEvents = 'none';
-    el.style.zIndex = '9999';
+    const el = document.createElement("div");
+    el.style.position = "fixed";
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.width = "6px";
+    el.style.height = "6px";
+    el.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+    el.style.borderRadius = "50%";
+    el.style.pointerEvents = "none";
+    el.style.zIndex = "9999";
     document.body.appendChild(el);
 
     const angle = Math.random() * Math.PI * 2;
@@ -433,13 +435,16 @@ const triggerConfetti = (x, y) => {
     const tx = Math.cos(angle) * velocity * 40;
     const ty = Math.sin(angle) * velocity * 40 + 20; // slight gravity
 
-    const animation = el.animate([
-      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-      { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-    ], {
-      duration: 600 + Math.random() * 300,
-      easing: 'cubic-bezier(0, .9, .57, 1)'
-    });
+    const animation = el.animate(
+      [
+        { transform: "translate(0, 0) scale(1)", opacity: 1 },
+        { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 },
+      ],
+      {
+        duration: 600 + Math.random() * 300,
+        easing: "cubic-bezier(0, .9, .57, 1)",
+      },
+    );
 
     animation.onfinish = () => el.remove();
   }
@@ -448,7 +453,7 @@ const triggerConfetti = (x, y) => {
 const useShake = (callback, enabled = true) => {
   useEffect(() => {
     if (!enabled) return;
-    
+
     let lastX, lastY, lastZ;
     let lastTime = 0;
     const threshold = 15;
@@ -456,32 +461,37 @@ const useShake = (callback, enabled = true) => {
     const handleMotion = (e) => {
       const current = e.accelerationIncludingGravity;
       if (!current) return;
-      
+
       const now = Date.now();
-      if ((now - lastTime) > 100) {
+      if (now - lastTime > 100) {
         const diffTime = now - lastTime;
         lastTime = now;
-        
+
         if (lastX !== undefined) {
-          const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+          const speed =
+            (Math.abs(
+              current.x + current.y + current.z - lastX - lastY - lastZ,
+            ) /
+              diffTime) *
+            10000;
           if (speed > threshold) {
             callback();
           }
         }
-        
+
         lastX = current.x;
         lastY = current.y;
         lastZ = current.z;
       }
     };
 
-    if (typeof window !== 'undefined' && 'ondevicemotion' in window) {
-       window.addEventListener('devicemotion', handleMotion);
+    if (typeof window !== "undefined" && "ondevicemotion" in window) {
+      window.addEventListener("devicemotion", handleMotion);
     }
     return () => {
-       if (typeof window !== 'undefined' && 'ondevicemotion' in window) {
-         window.removeEventListener('devicemotion', handleMotion);
-       }
+      if (typeof window !== "undefined" && "ondevicemotion" in window) {
+        window.removeEventListener("devicemotion", handleMotion);
+      }
     };
   }, [callback, enabled]);
 };
@@ -513,7 +523,7 @@ const BackToTopButton = () => {
     };
 
     window.addEventListener("scroll", toggleVisibility, { passive: true });
-    
+
     return () => {
       window.removeEventListener("scroll", toggleVisibility);
       cancelAnimationFrame(animationFrameId);
@@ -552,14 +562,14 @@ const TimelineScrollLine = () => {
 
     const updateHeight = () => {
       if (!lineRef.current || !fillRef.current) return;
-      
+
       const rect = lineRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
       const triggerPoint = viewportHeight * 0.6;
-      
+
       const scrolled = triggerPoint - rect.top;
       const newHeight = Math.max(0, Math.min(scrolled, rect.height));
-      
+
       fillRef.current.style.height = `${newHeight}px`;
     };
 
@@ -582,14 +592,16 @@ const TimelineScrollLine = () => {
       ref={lineRef}
       className="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700/50"
       style={{
-        maskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+        maskImage:
+          "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)",
       }}
     >
-      <div 
+      <div
         ref={fillRef}
         className="w-full bg-gradient-to-b from-blue-600 via-purple-500 to-blue-600"
-        style={{ height: '0px', transition: "height 0.1s linear" }}
+        style={{ height: "0px", transition: "height 0.1s linear" }}
       />
     </div>
   );
@@ -608,7 +620,7 @@ const TimelineDot = () => {
           setIsActive(false);
         }
       },
-      { rootMargin: "0px 0px -40% 0px", threshold: 0 }
+      { rootMargin: "0px 0px -40% 0px", threshold: 0 },
     );
 
     if (dotRef.current) {
@@ -619,11 +631,11 @@ const TimelineDot = () => {
   }, []);
 
   return (
-    <div 
+    <div
       ref={dotRef}
       className={`w-5 h-5 rounded-full border-4 border-slate-50 dark:border-slate-900 transition-all duration-500 ${
-        isActive 
-          ? "bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 animate-timeline-dot shadow-sm scale-100" 
+        isActive
+          ? "bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 animate-timeline-dot shadow-sm scale-100"
           : "bg-slate-300 dark:bg-slate-600 scale-75"
       }`}
     />
@@ -691,7 +703,7 @@ const ScrollProgress = () => {
       <div
         ref={barRef}
         className="h-full bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 transition-all duration-100 ease-out opacity-80"
-        style={{ width: '0%' }}
+        style={{ width: "0%" }}
       />
     </div>
   );
@@ -699,23 +711,26 @@ const ScrollProgress = () => {
 
 const MatrixRain = () => {
   const canvasRef = useRef(null);
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
+    const ctx = canvas.getContext("2d");
+
     let animationFrameId;
     let drops = [];
     const fontSize = 15;
     const columnWidth = 20;
-    const chars = "01"; 
+    const chars = "01";
 
     const init = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      ctx.font = `${fontSize}px monospace`;
       const columns = Math.ceil(canvas.width / columnWidth);
-      drops = Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height / columnWidth));
+      drops = Array(columns)
+        .fill(0)
+        .map(() => Math.floor((Math.random() * canvas.height) / columnWidth));
     };
 
     let resizeTimeout;
@@ -724,7 +739,7 @@ const MatrixRain = () => {
       resizeTimeout = setTimeout(init, 100);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     init();
 
     let lastTime = 0;
@@ -732,35 +747,40 @@ const MatrixRain = () => {
     const interval = 1000 / fps;
 
     const draw = (time) => {
-      const deltaTime = time - lastTime;
-      
-      if (deltaTime >= interval) {
-        lastTime = time - (deltaTime % interval);
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#0F0';
-        ctx.font = `${fontSize}px monospace`;
-        
-        for (let i = 0; i < drops.length; i++) {
-          const text = chars.charAt(Math.floor(Math.random() * chars.length));
-          ctx.fillText(text, i * columnWidth, drops[i] * columnWidth);
-          if (drops[i] * columnWidth > canvas.height && Math.random() > 0.975) drops[i] = 0;
-          drops[i]++;
-        }
-      }
       animationFrameId = requestAnimationFrame(draw);
+      const deltaTime = time - lastTime;
+
+      if (deltaTime < interval) return;
+
+      lastTime = time - (deltaTime % interval);
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#0F0";
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i * columnWidth, drops[i] * columnWidth);
+        if (drops[i] * columnWidth > canvas.height && Math.random() > 0.975)
+          drops[i] = 0;
+        drops[i]++;
+      }
     };
-    
+
     animationFrameId = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       clearTimeout(resizeTimeout);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none opacity-20" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-0 pointer-events-none opacity-20"
+    />
+  );
 };
 
 const CyberpunkBackground = () => {
@@ -771,40 +791,53 @@ const CyberpunkBackground = () => {
   useEffect(() => {
     if (window.matchMedia("(max-width: 768px)").matches) return;
 
+    let animationFrameId;
     const handleScroll = () => {
-      const scrolled = window.scrollY;
-      if (bgRef.current) bgRef.current.style.transform = `translateY(${scrolled * 0.05}px)`;
-      if (sunRef.current) sunRef.current.style.transform = `translate(-50%, ${scrolled * 0.2}px)`;
-      if (gridRef.current) gridRef.current.style.backgroundPosition = `0 ${scrolled * 0.5}px`;
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        const scrolled = window.scrollY;
+        if (bgRef.current)
+          bgRef.current.style.transform = `translateY(${scrolled * 0.05}px)`;
+        if (sunRef.current)
+          sunRef.current.style.transform = `translate(-50%, ${scrolled * 0.2}px)`;
+        if (gridRef.current)
+          gridRef.current.style.backgroundPosition = `0 ${scrolled * 0.5}px`;
+      });
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#050505]">
-      <div 
+      <div
         ref={bgRef}
         className="absolute inset-0 bg-gradient-to-b from-purple-900 via-purple-800 to-pink-600 opacity-20"
-        style={{ height: '120%', top: '-10%' }}
+        style={{ height: "120%", top: "-10%" }}
       />
-      <div 
+      <div
         ref={sunRef}
         className="absolute bottom-[30%] left-1/2 w-64 h-64"
-        style={{ transform: 'translate(-50%, 0)' }}
+        style={{ transform: "translate(-50%, 0)" }}
       >
-        <div className="w-full h-full rounded-full bg-gradient-to-t from-yellow-300 to-pink-600 blur-sm opacity-80 animate-sun-glitch" style={{ boxShadow: '0 0 60px rgba(255, 0, 255, 0.4)' }}>
-           <div className="absolute inset-0 w-full h-full bg-[repeating-linear-gradient(transparent,transparent_4px,#050505_4px,#050505_6px)] opacity-40 animate-pulse" />
+        <div
+          className="w-full h-full rounded-full bg-gradient-to-t from-yellow-300 to-pink-600 blur-sm opacity-80 animate-sun-glitch"
+          style={{ boxShadow: "0 0 60px rgba(255, 0, 255, 0.4)" }}
+        >
+          <div className="absolute inset-0 w-full h-full bg-[repeating-linear-gradient(transparent,transparent_4px,#050505_4px,#050505_6px)] opacity-40 animate-pulse" />
         </div>
       </div>
-      <div 
+      <div
         ref={gridRef}
         className="absolute bottom-0 left-0 right-0 h-[50%] bg-[linear-gradient(transparent_0%,rgba(0,243,255,0.5)_2px,transparent_4px),linear-gradient(90deg,transparent_0%,rgba(0,243,255,0.5)_2px,transparent_4px)]"
-        style={{ 
-            backgroundSize: '60px 60px', 
-            transform: 'perspective(300px) rotateX(60deg) scale(2)',
-            transformOrigin: 'bottom'
-        }} 
+        style={{
+          backgroundSize: "60px 60px",
+          transform: "perspective(300px) rotateX(60deg) scale(2)",
+          transformOrigin: "bottom",
+        }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
     </div>
@@ -821,11 +854,15 @@ const ParallaxBackground = ({ theme }) => {
 
     let animationFrameId;
     const handleScroll = () => {
+      cancelAnimationFrame(animationFrameId);
       animationFrameId = requestAnimationFrame(() => {
         const scrolled = window.scrollY;
-        if (blob1Ref.current) blob1Ref.current.style.transform = `translate3d(0, ${scrolled * 0.35}px, 0)`;
-        if (blob2Ref.current) blob2Ref.current.style.transform = `translate3d(0, ${scrolled * -0.25}px, 0)`;
-        if (blob3Ref.current) blob3Ref.current.style.transform = `translate3d(0, ${scrolled * 0.15}px, 0)`;
+        if (blob1Ref.current)
+          blob1Ref.current.style.transform = `translate3d(0, ${scrolled * 0.35}px, 0)`;
+        if (blob2Ref.current)
+          blob2Ref.current.style.transform = `translate3d(0, ${scrolled * -0.25}px, 0)`;
+        if (blob3Ref.current)
+          blob3Ref.current.style.transform = `translate3d(0, ${scrolled * 0.15}px, 0)`;
       });
     };
 
@@ -836,28 +873,43 @@ const ParallaxBackground = ({ theme }) => {
     };
   }, []);
 
-  if (theme === 'retro') return <MatrixRain />;
-  if (theme === 'cyberpunk') return <CyberpunkBackground />;
+  if (theme === "retro") return <MatrixRain />;
+  if (theme === "cyberpunk") return <CyberpunkBackground />;
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
       <div className="absolute inset-0 bg-slate-50 dark:bg-slate-900 transition-colors duration-300" />
       <div
-        className="absolute inset-0 opacity-[0.03] dark:opacity-0 mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-overlay"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }}
       />
-      <div ref={blob1Ref} className="parallax-blob absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '15s' }} />
-      <div ref={blob2Ref} className="parallax-blob absolute top-[30%] -right-[10%] w-[40vw] h-[40vw] min-w-[250px] min-h-[250px] bg-gradient-to-r from-purple-500 via-blue-600 to-purple-500 dark:from-purple-500 dark:via-blue-600 dark:to-purple-500 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '18s' }} />
-      <div ref={blob3Ref} className="parallax-blob absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] min-w-[400px] min-h-[400px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300" style={{ animationDuration: '20s' }} />
+      <div
+        ref={blob1Ref}
+        className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] min-w-[300px] min-h-[300px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300"
+        style={{ animationDuration: "15s" }}
+      />
+      <div
+        ref={blob2Ref}
+        className="absolute top-[30%] -right-[10%] w-[40vw] h-[40vw] min-w-[250px] min-h-[250px] bg-gradient-to-r from-purple-500 via-blue-600 to-purple-500 dark:from-purple-500 dark:via-blue-600 dark:to-purple-500 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300"
+        style={{ animationDuration: "18s" }}
+      />
+      <div
+        ref={blob3Ref}
+        className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] min-w-[400px] min-h-[400px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-20 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300"
+        style={{ animationDuration: "20s" }}
+      />
     </div>
   );
 };
 
 const PullToRefresh = () => {
-  const [style, setStyle] = useState({ transform: 'translateY(0px)', opacity: 0 });
-  const [icon, setIcon] = useState('chevron'); // 'chevron' or 'spinner'
+  const [style, setStyle] = useState({
+    transform: "translateY(0px)",
+    opacity: 0,
+  });
+  const [icon, setIcon] = useState("chevron"); // 'chevron' or 'spinner'
   const [rotation, setRotation] = useState(0);
 
   const state = useRef({
@@ -868,7 +920,7 @@ const PullToRefresh = () => {
   }).current;
 
   useEffect(() => {
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (!isTouch) return;
 
     const handleTouchStart = (e) => {
@@ -885,7 +937,8 @@ const PullToRefresh = () => {
       if (distance > 0) {
         e.preventDefault();
         state.pullDistance = distance;
-        const easedPull = 1 - Math.pow(1 - Math.min(distance / (state.threshold * 1.5), 1), 3);
+        const easedPull =
+          1 - Math.pow(1 - Math.min(distance / (state.threshold * 1.5), 1), 3);
         const indicatorY = easedPull * state.threshold;
         setStyle({ transform: `translateY(${indicatorY}px)`, opacity: 1 });
         setRotation((distance / state.threshold) * 360);
@@ -899,45 +952,53 @@ const PullToRefresh = () => {
       state.isPulling = false;
 
       if (state.pullDistance > state.threshold) {
-        setIcon('spinner');
+        setIcon("spinner");
         setStyle({ transform: `translateY(${state.threshold}px)`, opacity: 1 });
         setTimeout(() => {
-          setIcon('chevron');
-          setStyle({ transform: 'translateY(0px)', opacity: 0 });
+          setIcon("chevron");
+          setStyle({ transform: "translateY(0px)", opacity: 0 });
         }, 1500);
       } else {
-        setStyle({ transform: 'translateY(0px)', opacity: 0 });
+        setStyle({ transform: "translateY(0px)", opacity: 0 });
       }
       state.pullDistance = 0;
       state.startY = 0;
     };
 
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('touchcancel', handleTouchEnd);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", handleTouchEnd);
 
     return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
-      window.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchEnd);
     };
   }, [state]);
 
   return (
     <div
       className="fixed top-[-60px] left-0 right-0 z-50 flex justify-center items-center pointer-events-none transition-transform duration-300 ease-out"
-      style={{ height: '60px', ...style }}
+      style={{ height: "60px", ...style }}
     >
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700 pull-refresh-circle">
-        {icon === 'spinner' ? (
+        {icon === "spinner" ? (
           <div className="animate-spin">
-            <img src={duckImg} alt="Loading" className="w-6 h-6 object-contain" />
+            <img
+              src={duckImg}
+              alt="Loading"
+              className="w-6 h-6 object-contain"
+            />
           </div>
         ) : (
           <div style={{ transform: `rotate(${rotation}deg)` }}>
-            <img src={duckImg} alt="Pull to refresh" className="w-6 h-6 object-contain" />
+            <img
+              src={duckImg}
+              alt="Pull to refresh"
+              className="w-6 h-6 object-contain"
+            />
           </div>
         )}
       </div>
@@ -983,10 +1044,10 @@ export default function Portfolio() {
     // Update theme-color meta tag for mobile browsers to match the header/background
     const metaThemeColor = document.querySelector("meta[name=theme-color]");
     let color = "#f8fafc"; // Light mode default (slate-50)
-    
-    if (specialTheme === 'retro') {
+
+    if (specialTheme === "retro") {
       color = "#000000";
-    } else if (specialTheme === 'cyberpunk') {
+    } else if (specialTheme === "cyberpunk") {
       color = "#050505";
     } else if (darkMode) {
       color = "#0f172a"; // Dark mode default (slate-900)
@@ -1036,6 +1097,8 @@ export default function Portfolio() {
     }
     return false;
   });
+  const [showNav, setShowNav] = useState(true);
+  const lastScrollY = useRef(0);
 
   const triggerHaptic = () => {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
@@ -1068,22 +1131,31 @@ export default function Portfolio() {
   });
 
   useEffect(() => {
+    let animationFrameId;
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const nearBottom =
+          window.innerHeight + window.scrollY >=
+          document.documentElement.scrollHeight - 100;
 
-      // Show nav when near bottom so it docks above footer, otherwise hide on scroll down
-      if (nearBottom) {
-        setShowNav(true);
-      } else if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-        setShowNav(false);
-      } else {
-        setShowNav(true);
-      }
-      lastScrollY.current = currentScrollY;
+        // Show nav when near bottom so it docks above footer, otherwise hide on scroll down
+        if (nearBottom) {
+          setShowNav(true);
+        } else if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+          setShowNav(false);
+        } else {
+          setShowNav(true);
+        }
+        lastScrollY.current = currentScrollY;
+      });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   const deferredSkillFilter = useDeferredValue(activeSkillFilter);
@@ -1195,12 +1267,12 @@ export default function Portfolio() {
       scrollWidth = container.scrollWidth;
       clientWidth = container.clientWidth;
       cards = Array.from(container.getElementsByClassName("carousel-card"));
-      cardCenters = cards.map(card => card.offsetLeft + card.offsetWidth / 2);
+      cardCenters = cards.map((card) => card.offsetLeft + card.offsetWidth / 2);
     };
 
     // Initial calculation
     updateMetrics();
-    window.addEventListener('resize', updateMetrics);
+    window.addEventListener("resize", updateMetrics);
 
     let animationId;
     const scroll = () => {
@@ -1214,27 +1286,27 @@ export default function Portfolio() {
       }
 
       const center = container.scrollLeft + clientWidth / 2;
-      
+
       for (let i = 0; i < cards.length; i++) {
         const card = cards[i];
         const cardCenter = cardCenters[i];
         const dist = Math.abs(center - cardCenter);
-        
+
         if (dist < clientWidth) {
           const maxDist = clientWidth / 2;
           const scale = Math.max(0.85, 1 - (dist / maxDist) * 0.15);
           card.style.transform = `scale(${scale})`;
-        } else if (card.style.transform !== 'scale(0.85)') {
-          card.style.transform = 'scale(0.85)';
+        } else if (card.style.transform !== "scale(0.85)") {
+          card.style.transform = "scale(0.85)";
         }
       }
       animationId = requestAnimationFrame(scroll);
     };
-    
+
     animationId = requestAnimationFrame(scroll);
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', updateMetrics);
+      window.removeEventListener("resize", updateMetrics);
     };
   }, [certView]);
 
@@ -1267,9 +1339,9 @@ export default function Portfolio() {
     if (e.buttons === 1) {
       const onMouseUp = () => {
         setIsPaused(false);
-        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener("mouseup", onMouseUp);
       };
-      window.addEventListener('mouseup', onMouseUp);
+      window.addEventListener("mouseup", onMouseUp);
     } else {
       setIsPaused(false);
     }
@@ -1454,22 +1526,6 @@ export default function Portfolio() {
         @media (max-width: 768px) {
           .animate-float-card {
             animation: none;
-          }
-          .animate-gradient-x,
-          .animate-nav-active,
-          .animate-timeline-dot,
-          .animate-bob,
-          .animate-sun-glitch,
-          .animate-particle {
-            animation: none !important;
-          }
-          .animate-gradient-x {
-            background-size: 100% 100% !important;
-          }
-          .parallax-blob {
-            mix-blend-mode: normal !important;
-            opacity: 0.1 !important;
-            filter: blur(30px) !important;
           }
         }
         @keyframes float-button {
@@ -1726,7 +1782,7 @@ export default function Portfolio() {
             <div
               onClick={(e) => {
                 e.stopPropagation();
-                toggleTheme('retro');
+                toggleTheme("retro");
               }}
               className="hover:scale-110 transition-transform"
             >
@@ -1740,7 +1796,7 @@ export default function Portfolio() {
               data-text="JACOB BENJAMIN"
               onClick={(e) => {
                 e.stopPropagation();
-                toggleTheme('cyberpunk');
+                toggleTheme("cyberpunk");
               }}
             >
               JACOB BENJAMIN
@@ -1757,11 +1813,18 @@ export default function Portfolio() {
                 } else {
                   setDarkMode(!darkMode);
                 }
-                if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(10);
+                if (typeof navigator !== "undefined" && navigator.vibrate)
+                  navigator.vibrate(10);
               }}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
-              {specialTheme ? <RotateCcw size={20} /> : (darkMode ? <Sun size={20} /> : <Moon size={20} />)}
+              {specialTheme ? (
+                <RotateCcw size={20} />
+              ) : darkMode ? (
+                <Sun size={20} />
+              ) : (
+                <Moon size={20} />
+              )}
             </button>
           </div>
         </div>
@@ -1787,7 +1850,7 @@ export default function Portfolio() {
                     <MapPin size={16} /> {personalInfo.location}
                   </span>
                 </div>
-                <h1 
+                <h1
                   className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-600 to-slate-900 dark:from-white dark:via-blue-400 dark:to-white animate-gradient-x pb-1"
                   data-text={personalInfo.name}
                 >
@@ -1886,7 +1949,9 @@ export default function Portfolio() {
                           {activeSkillFilter}
                         </span>
                       </span>
-                      <span className="hidden sm:inline text-xs text-slate-400 italic ml-1">(Shake to clear)</span>
+                      <span className="hidden sm:inline text-xs text-slate-400 italic ml-1">
+                        (Shake to clear)
+                      </span>
                     </div>
                     <button
                       onClick={() => setActiveSkillFilter(null)}
@@ -2237,7 +2302,7 @@ export default function Portfolio() {
         </div>
 
         {/* NAVIGATION - Floating Bottom Bar */}
-        <div className="sticky bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 w-[90%] max-w-sm lg:max-w-3xl mx-auto mt-8">
+        <div className={`sticky bottom-[calc(1.5rem+env(safe-area-inset-bottom))] z-50 w-[90%] max-w-sm lg:max-w-3xl mx-auto mt-8 transition-transform duration-300 ${showNav ? 'translate-y-0' : 'translate-y-[200%]'}`}>
           <div
             className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl p-2 flex justify-between lg:justify-center lg:gap-4 items-center animate-floatIn relative"
             style={{ animationDelay: "0.3s" }}
@@ -2307,7 +2372,10 @@ export default function Portfolio() {
         <div className="absolute -top-4 md:top-auto md:bottom-0 left-0 w-full h-16 pointer-events-none z-30">
           <div className="absolute top-16 left-0 animate-fly">
             <div className="relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 blur-xl rounded-full" style={{ backgroundColor: 'var(--duck-glow)' }}></div>
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 blur-xl rounded-full"
+                style={{ backgroundColor: "var(--duck-glow)" }}
+              ></div>
               <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1">
                 <div
                   className="absolute w-1.5 h-1.5 border border-cyan-400/60 rounded-full animate-particle"
