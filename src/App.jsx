@@ -1006,6 +1006,74 @@ const PullToRefresh = () => {
   );
 };
 
+const HitCounter = () => {
+  const [count, setCount] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const fetchCount = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_COUNTER_API_KEY;
+        // Increment the counter and get the updated value directly
+        const response = await fetch(
+          `https://api.counterapi.dev/v2/visitor-counter/visitor-counter-1998/up?token=${apiKey}`
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCount(data.data.up_count);
+      } catch (err) {
+        console.error("Error fetching hit count:", err);
+        setError(err); // Set error state on failure
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCount();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+        <div className="w-12 h-3 bg-slate-200 dark:bg-slate-700 rounded-sm animate-pulse"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    // Render a fallback UI on error
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+        <Activity size={10} className="text-red-500" />
+        <span>... visitors</span>
+      </div>
+    );
+  }
+
+  if (count === null || count === undefined) {
+    return (
+      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+        <Activity size={10} className="text-slate-400" />
+        <span>0 visitors</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+      <Activity size={10} className="text-blue-500" />
+      <span>{Number(count).toLocaleString()} visitors</span>
+    </div>
+  );
+};
+
 // --- MAIN APP ---
 
 export default function Portfolio() {
@@ -2401,10 +2469,13 @@ export default function Portfolio() {
 
         <div className="max-w-4xl mx-auto px-8 md:px-24 flex flex-col md:flex-row justify-between items-center gap-2">
           <div className="text-slate-500 dark:text-slate-400 text-sm text-center md:text-left">
-            © {new Date().getFullYear()} {personalInfo.name}. All rights
-            reserved.
+            <span>
+              © {new Date().getFullYear()} {personalInfo.name}. All rights
+              reserved.
+            </span>
           </div>
           <div className="flex items-center gap-6">
+            <HitCounter />
             <a
               href="https://www.linkedin.com/in/jbbenj/"
               target="_blank"
