@@ -34,6 +34,14 @@ import {
   Linkedin,
   Lightbulb,
   RotateCcw,
+  Music,
+  Disc,
+  Mic,
+  Tags,
+  ArrowLeft,
+  X,
+  Loader2,
+  Crown,
 } from "lucide-react";
 import headshotImg from "./assets/headshot.jpg";
 import duckImg from "./assets/duck.png";
@@ -404,7 +412,7 @@ const TestimonialCard = ({ item }) => {
           "{item.text}"
         </p>
         {!isExpanded && (
-          <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-800 dark:via-slate-800/80 dark:to-transparent"></div>
+          <div className="absolute bottom-0 left-0 w-full h-12 testimonial-fade bg-gradient-to-t from-white via-white/80 to-transparent dark:from-slate-800 dark:via-slate-800/80 dark:to-transparent"></div>
         )}
       </div>
       <div className="mt-2 flex justify-center text-slate-400">
@@ -1074,6 +1082,565 @@ const HitCounter = () => {
   );
 };
 
+const Equalizer = ({ theme }) => {
+  const barColor = theme === "cyberpunk"
+    ? "bg-[#00f3ff] shadow-[0_0_5px_#00f3ff]"
+    : theme === "retro"
+      ? "bg-[#00ff00]"
+      : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%]";
+
+  const animationClass = (theme === "cyberpunk" || theme === "retro")
+    ? "animate-equalizer"
+    : "animate-equalizer-gradient";
+
+  return (
+    <div className="flex items-end gap-0.5 h-3" title="Now Playing">
+      <div className={`w-1 rounded-sm ${animationClass} ${barColor}`} style={{ animationDelay: "0s" }} />
+      <div className={`w-1 rounded-sm ${animationClass} ${barColor}`} style={{ animationDelay: "0.2s" }} />
+      <div className={`w-1 rounded-sm ${animationClass} ${barColor}`} style={{ animationDelay: "0.4s" }} />
+    </div>
+  );
+};
+
+const LastFmNowPlaying = ({ onClick, theme }) => {
+  const [track, setTrack] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    const fetchNowPlaying = async () => {
+      try {
+        const apiKey = "20c3955130940869727729517e527b8f";
+        const user = "jbenjamin98";
+        const response = await fetch(
+          `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${user}&api_key=${apiKey}&format=json&limit=1`,
+        );
+        const data = await response.json();
+        const recentTrack = data.recenttracks.track[0];
+
+        if (recentTrack) {
+          const nowPlaying =
+            recentTrack["@attr"] && recentTrack["@attr"].nowplaying === "true";
+          setIsPlaying(nowPlaying);
+          setTrack({
+            title: recentTrack.name,
+            artist: recentTrack.artist["#text"],
+            image: recentTrack.image[1]["#text"],
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching Last.fm data", e);
+      }
+    };
+
+    fetchNowPlaying();
+    const interval = setInterval(fetchNowPlaying, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!track) return null;
+
+  const iconColor = "text-slate-400";
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 max-w-[200px] group"
+    >
+      <div className="relative flex items-center justify-center shrink-0 w-4 h-4">
+        {isPlaying ? (
+          <Equalizer theme={theme} />
+        ) : (
+          <Music
+            size={14}
+            className={iconColor}
+          />
+        )}
+      </div>
+      <div className="flex flex-col text-left overflow-hidden w-[120px]">
+        <div className="relative h-[14px] w-full overflow-hidden">
+          <AutoScrollText>
+            <span className="text-[10px] font-bold text-slate-900 dark:text-white">
+              {track.title}
+            </span>
+          </AutoScrollText>
+        </div>
+        <div className="relative h-[12px] w-full overflow-hidden">
+          <AutoScrollText>
+            <span className="text-[9px] text-slate-500 dark:text-slate-400">{track.artist}</span>
+          </AutoScrollText>
+        </div>
+      </div>
+    </button>
+  );
+};
+
+const ModalParallaxBackground = ({ scrollContainerRef }) => {
+  const blob1Ref = useRef(null);
+  const blob2Ref = useRef(null);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    let animationFrameId;
+    const handleScroll = () => {
+      cancelAnimationFrame(animationFrameId);
+
+      animationFrameId = requestAnimationFrame(() => {
+        const scrolled = container.scrollTop;
+        if (blob1Ref.current)
+          blob1Ref.current.style.transform = `translate3d(0, ${scrolled * 0.2}px, 0)`;
+        if (blob2Ref.current)
+          blob2Ref.current.style.transform = `translate3d(0, ${scrolled * -0.15}px, 0)`;
+      });
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [scrollContainerRef]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <div
+        ref={blob1Ref}
+        className="absolute -top-[10%] -left-[10%] w-[400px] h-[400px] bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-600 dark:via-purple-500 dark:to-blue-600 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-10 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300"
+      />
+      <div
+        ref={blob2Ref}
+        className="absolute top-[40%] -right-[10%] w-[300px] h-[300px] bg-gradient-to-r from-purple-500 via-blue-600 to-purple-500 dark:from-purple-500 dark:via-blue-600 dark:to-purple-500 bg-[length:200%_200%] animate-gradient-x rounded-full blur-3xl opacity-10 mix-blend-multiply dark:mix-blend-screen transition-colors duration-300"
+      />
+    </div>
+  );
+};
+
+const AutoScrollText = ({ children, className = "", containerClassName = "", align = "left" }) => {
+  const containerRef = useRef(null);
+  const contentRef = useRef(null);
+  const [shouldScroll, setShouldScroll] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (containerRef.current && contentRef.current) {
+        setShouldScroll(contentRef.current.scrollWidth > containerRef.current.clientWidth);
+      }
+    };
+
+    checkScroll();
+    window.addEventListener("resize", checkScroll);
+    return () => window.removeEventListener("resize", checkScroll);
+  }, [children]);
+
+  return (
+    <div ref={containerRef} className={`relative overflow-hidden w-full ${containerClassName}`}>
+      <div 
+        className={`whitespace-nowrap flex ${shouldScroll ? "animate-scroll-text w-max" : "w-full"} ${!shouldScroll && align === "center" ? "justify-center" : ""}`}
+      >
+        <div ref={contentRef} className={`flex items-center ${className} ${shouldScroll ? "mr-8" : ""}`}>{children}</div>
+        {shouldScroll && (
+           <div className={`flex items-center ${className} mr-8`}>{children}</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
+  const [period, setPeriod] = useState("7day");
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  const renderArtists = (data) => {
+    if (!data || data.length === 0)
+      return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+    const displayData = data.slice(0, 9);
+    const rest = displayData.slice(5);
+    const podiumIndices = [3, 1, 0, 2, 4]; // 4th, 2nd, 1st, 3rd, 5th
+
+    return (
+      <div className="flex flex-col gap-8 p-4">
+        <div className="flex justify-center items-end gap-1 sm:gap-2 min-h-[220px] pb-4 border-b border-slate-100 dark:border-slate-800">
+          {podiumIndices.map((dataIndex) => {
+            const artist = displayData[dataIndex];
+            if (!artist) return null;
+            
+            const rank = dataIndex + 1;
+            const isFirst = rank === 1;
+            
+            let heightClass = "h-16";
+            let rankSizeClass = "text-lg";
+
+            if (rank === 1) {
+              heightClass = "h-48";
+              rankSizeClass = "text-4xl";
+            } else if (rank === 2) {
+              heightClass = "h-40";
+              rankSizeClass = "text-3xl";
+            } else if (rank === 3) {
+              heightClass = "h-32";
+              rankSizeClass = "text-2xl";
+            } else if (rank === 4) {
+              heightClass = "h-24";
+              rankSizeClass = "text-xl";
+            }
+
+            let colorClass = "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 opacity-80 border-blue-400/30 bg-[length:200%_200%]";
+            const delay = dataIndex * 100 + 200;
+            
+            return (
+              <div key={artist.name} className={`flex flex-col items-center w-1/5 max-w-[100px] group animate-popIn`} style={{ animationDelay: `${dataIndex * 100}ms` }}>
+                 <div className={`mb-2 text-center transition-transform duration-300 ${isFirst ? "group-hover:-translate-y-2" : ""}`}>
+                    <div className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight text-[10px] sm:text-xs mb-1">
+                        {artist.name}
+                    </div>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm">
+                        <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
+                    </span>
+                 </div>
+                 <div className={`w-full ${heightClass} relative flex items-end justify-center`}>
+                    <div 
+                      className={`absolute bottom-0 w-full ${colorClass} podium-bar border-t border-x rounded-t-lg shadow-sm animate-podium-live flex justify-center pt-4`} 
+                      style={{ animationDelay: `${delay}ms, ${delay + 1000}ms, ${delay}ms` }}
+                    >
+                      {isFirst && (
+                        <div 
+                          className="z-20 cursor-pointer opacity-0 animate-popIn"
+                          style={{ animationDelay: `${delay + 1000}ms` }}
+                          onClick={(e) => {
+                             e.stopPropagation();
+                             triggerConfetti(e.clientX, e.clientY);
+                          }}
+                        >
+                           <Crown size={28} className={`${theme === 'retro' ? 'text-[#00ff00] fill-[#00ff00]' : 'text-yellow-400 fill-yellow-400'} animate-bob drop-shadow-lg`} />
+                        </div>
+                      )}
+                    </div>
+                    <span className={`relative z-10 font-black ${rankSizeClass} text-white opacity-90 pb-2`}>
+                        {rank}
+                    </span>
+                 </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {rest.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {rest.map((artist, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors animate-popIn" style={{ animationDelay: `${(i + 5) * 50}ms` }}>
+                        <div className="flex items-center gap-3 min-w-0">
+                            <span className="font-mono text-slate-400 text-sm w-6 text-center font-bold">#{i + 6}</span>
+                            <span className="font-medium text-slate-900 dark:text-white truncate text-sm">{artist.name}</span>
+                        </div>
+                        <span className="text-xs font-mono text-slate-500 font-medium shrink-0 ml-2">
+                          <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
+                        </span>
+                    </div>
+                ))}
+            </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderAlbums = (data) => {
+    if (!data || data.length === 0)
+      return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+    // Show 9 albums
+    const displayData = data.slice(0, 9);
+
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 p-2 min-h-[300px] grid-flow-dense">
+        {displayData.map((album, i) => {
+          // Grid layout logic for top 3 items
+          let gridClass = "col-span-1 row-span-1 aspect-square";
+          if (i === 0) gridClass = "col-span-2 row-span-2 md:col-span-3 md:row-span-3 aspect-square";
+          else if (i === 1) gridClass = "col-span-1 row-span-1 md:col-span-2 md:row-span-2 aspect-square";
+
+          const img = album.image?.[3]?.["#text"] || album.image?.[2]?.["#text"];
+
+          return (
+            <div
+              key={i}
+              className={`relative group overflow-hidden rounded-xl ${gridClass} bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-popIn`}
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              {img ? (
+                <img
+                  src={img}
+                  alt={album.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                  <Disc size={i === 0 ? 48 : 24} />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm rounded-xl z-10">
+                <AutoScrollText
+                  align="center"
+                  containerClassName="mb-1"
+                >
+                  <span className={`font-bold text-white ${i === 0 ? "text-lg" : i === 1 ? "text-[10px] md:text-lg" : "text-[10px]"}`}>
+                    {album.name}
+                  </span>
+                </AutoScrollText>
+                <AutoScrollText align="center" containerClassName="mt-1">
+                  <span className={`text-slate-300 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>{album.artist.name}</span>
+                </AutoScrollText>
+                <span className={`text-emerald-400 font-bold mt-1 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>
+                  <AnimatedCounter value={`${parseInt(album.playcount).toLocaleString()} plays`} />
+                </span>
+              </div>
+              <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-gradient-x backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg z-20">
+                #{i + 1}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderTracks = (data) => {
+    if (!data || data.length === 0)
+      return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+    const displayData = data.slice(0, 9);
+    const maxPlays = parseInt(displayData[0].playcount);
+    const totalBars = Math.min(50, maxPlays);
+
+    return (
+      <div className="space-y-4 p-4 min-h-[300px]">
+        {displayData.map((track, i) => {
+          const plays = parseInt(track.playcount);
+          const percentage = (plays / maxPlays) * 100;
+
+          return (
+            <div key={i} className="relative group">
+              <div className="flex items-center justify-between text-sm mb-1 relative z-10">
+                <div className="flex items-center gap-3 min-w-0 overflow-hidden flex-1">
+                  <span className="text-slate-400 font-mono w-6 text-right shrink-0">#{i + 1}</span>
+                  <AutoScrollText
+                    containerClassName="flex-1"
+                  >
+                    <span className="font-bold text-slate-900 dark:text-white">{track.name}</span>
+                    <span className="text-slate-400 mx-2 text-xs">•</span>
+                    <span className="text-slate-500 text-xs">{track.artist.name}</span>
+                  </AutoScrollText>
+                </div>
+                <div className="font-mono text-slate-500 text-xs shrink-0 ml-4">
+                  <AnimatedCounter value={`${plays.toLocaleString()} plays`} />
+                </div>
+              </div>
+              
+              <div className="flex items-end gap-[1px] h-8 w-full mt-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300" title={`${plays.toLocaleString()} plays`}>
+                {Array.from({ length: totalBars }).map((_, barIdx) => {
+                  const barPercent = ((barIdx + 1) / totalBars) * 100;
+                  const isFilled = barPercent <= percentage + 0.1;
+                  // Deterministic wave height based on track index and bar index
+                  const height = Math.max(15, (Math.sin(barIdx * 0.5 + i * 0.8) * 0.5 + 0.5) * 80 + 20);
+                  
+                  return (
+                    <div
+                      key={barIdx}
+                      className={`flex-1 rounded-t-sm transition-all duration-300 group-hover:brightness-125 ${
+                        isFilled 
+                          ? "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:100%_200%] animate-wave-live" 
+                          : "bg-slate-200 dark:bg-slate-800 animate-wave-pulse"
+                      }`}
+                      style={{ 
+                        height: `${height}%`, 
+                        animationDelay: `${(barIdx * 50) % 1000}ms`,
+                        animationDuration: `${1500 + (barIdx * 100) % 1000}ms`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+      <div className="absolute inset-0" onClick={onClose} />
+      <SpotlightCard className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 h-[85vh] relative z-10 overflow-hidden flex flex-col">
+        <ModalParallaxBackground scrollContainerRef={scrollRef} />
+        <div ref={scrollRef} className="overflow-y-auto carousel-scrollbar h-full w-full relative z-10">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Activity className="text-blue-500" /> Music Insights
+              {isRefreshing && (
+                <div className="relative flex h-2 w-2 ml-2" title="Refreshing data...">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </div>
+              )}
+            </h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            >
+              <X size={20} className="text-slate-500" />
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="flex items-center justify-center h-[400px] animate-fadeIn">
+              <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 cursor-pointer w-fit" onClick={() => setPeriod(period === '7day' ? 'overall' : '7day')}>
+                  <div
+                    className={`absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700 rounded-full shadow-sm transition-all duration-300 ease-in-out ${
+                      period === 'overall' ? 'translate-x-[100%]' : 'translate-x-0'
+                    }`}
+                  />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPeriod("7day"); }}
+                    className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "7day" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
+                  >
+                    Last 7 Days
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setPeriod("overall"); }}
+                    className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "overall" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
+                  >
+                    All Time
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-12">
+                <section>
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
+                    <Mic className="text-blue-500" size={20} /> Top Artists
+                  </h3>
+                  {renderArtists(stats[period].artists)}
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
+                    <Disc className="text-blue-500" size={20} /> Top Albums
+                  </h3>
+                  {renderAlbums(stats[period].albums)}
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
+                    <Music className="text-blue-500" size={20} /> Top Tracks
+                  </h3>
+                  {renderTracks(stats[period].tracks)}
+                </section>
+
+                <section>
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
+                    <Calendar className="text-blue-500" size={20} /> Recent Listening
+                  </h3>
+                  <div className="space-y-2 px-4">
+                    {stats.recent.slice(0, 9).map((track, i) => {
+                      const isNowPlaying = track["@attr"]?.nowplaying;
+                      return (
+                        <div
+                          key={i}
+                          className={`relative overflow-hidden flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                            isNowPlaying
+                              ? "bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                              : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700/50"
+                          }`}
+                        >
+                          {isNowPlaying && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1.5 flex items-end gap-0.5 opacity-60 px-3">
+                              {Array.from({ length: 40 }).map((_, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`flex-1 rounded-sm ${
+                                    theme === "cyberpunk"
+                                      ? "bg-[#00f3ff] animate-equalizer"
+                                      : theme === "retro"
+                                      ? "bg-[#00ff00] animate-equalizer"
+                                      : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
+                                  }`}
+                                  style={{
+                                    animationDuration: (theme === "cyberpunk" || theme === "retro")
+                                      ? `${0.4 + Math.random() * 0.6}s`
+                                      : `${0.4 + Math.random() * 0.6}s, 3s`,
+                                    animationDelay: `${Math.random() * 0.5}s`,
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          <div className="shrink-0 w-10 h-10 rounded overflow-hidden bg-slate-200 dark:bg-slate-700 relative z-10">
+                            <img
+                              src={
+                                track.image[1]["#text"] ||
+                                "https://lastfm.freetls.fastly.net/i/u/64s/2a96cbd8b46e442fc41c2b86b821562f.png"
+                              }
+                              alt={track.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0 relative z-10">
+                            <div className="font-medium text-slate-900 dark:text-white text-sm truncate">
+                              {track.name}
+                            </div>
+                            <div className="text-slate-500 text-xs truncate">
+                              {track.artist["#text"]}
+                            </div>
+                          </div>
+                          {isNowPlaying && (
+                            <div className={`relative z-10 ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm ${
+                                theme === "cyberpunk"
+                                  ? "bg-[#00f3ff]/10 border border-[#00f3ff]/50 text-[#00f3ff]"
+                                  : theme === "retro"
+                                  ? "bg-[#00ff00]/10 border border-[#00ff00]/50 text-[#00ff00]"
+                                  : "bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300"
+                              }`}>
+                              <span className="relative flex h-2 w-2">
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                                    theme === "cyberpunk" ? "bg-[#00f3ff]" : theme === "retro" ? "bg-[#00ff00]" : "bg-blue-400"
+                                }`}></span>
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                                    theme === "cyberpunk" ? "bg-[#00f3ff]" : theme === "retro" ? "bg-[#00ff00]" : "bg-blue-500"
+                                }`}></span>
+                              </span>
+                              Playing
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              </div>
+            </div>
+          )}
+        </div>
+        </div>
+      </SpotlightCard>
+    </div>
+  );
+};
+
 // --- MAIN APP ---
 
 export default function Portfolio() {
@@ -1086,6 +1653,65 @@ export default function Portfolio() {
   const [darkMode, setDarkMode] = useDarkMode();
   const [specialTheme, setSpecialTheme] = useState(null);
   const [glitchActive, setGlitchActive] = useState(false);
+  const [showMusicStats, setShowMusicStats] = useState(false);
+  const [musicStats, setMusicStats] = useState({
+    overall: { artists: [], albums: [], tracks: [] },
+    "7day": { artists: [], albums: [], tracks: [] },
+    recent: [],
+  });
+  const [musicLoading, setMusicLoading] = useState(true);
+  const [musicRefreshing, setMusicRefreshing] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async (isBackground = false) => {
+      if (isBackground) setMusicRefreshing(true);
+      const apiKey = "20c3955130940869727729517e527b8f";
+      const user = "jbenjamin98";
+      const limit = 9; // Top 9
+
+      try {
+        const endpoints = [
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=overall`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=overall`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=overall`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettopartists&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=7day`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettopalbums&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=7day`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${user}&api_key=${apiKey}&format=json&limit=${limit}&period=7day`,
+          `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${user}&api_key=${apiKey}&format=json&limit=${limit}`,
+        ];
+
+        const responses = await Promise.all(
+          endpoints.map((url) => fetch(url).then((res) => res.json())),
+        );
+
+        setMusicStats({
+          overall: {
+            artists: responses[0].topartists.artist,
+            albums: responses[1].topalbums.album,
+            tracks: responses[2].toptracks.track,
+          },
+          "7day": {
+            artists: responses[3].topartists.artist,
+            albums: responses[4].topalbums.album,
+            tracks: responses[5].toptracks.track,
+          },
+          recent: responses[6].recenttracks.track,
+        });
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setMusicLoading(false);
+        if (isBackground) setMusicRefreshing(false);
+      }
+    };
+
+    const timer = setTimeout(() => fetchData(), 1000);
+    const interval = setInterval(() => fetchData(true), 30000);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     let timeoutId;
@@ -1515,6 +2141,39 @@ export default function Portfolio() {
           background-size: 200% 200%;
           animation: gradient-x 3s ease infinite, nav-glow-pulse 2s ease-in-out infinite;
         }
+        @keyframes gradient-y { 0% { background-position: 50% 0%; } 50% { background-position: 50% 100%; } 100% { background-position: 50% 0%; } }
+        .animate-gradient-y {
+          animation: gradient-y 3s ease infinite;
+        }
+        @keyframes grow-up { from { height: 0; } to { height: 100%; } }
+        .animate-grow-up {
+          animation: grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes podium-bounce {
+          0%, 100% { height: 100%; }
+          50% { height: 80%; }
+        }
+        .animate-podium-live {
+          animation: 
+            grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+            podium-bounce 2s ease-in-out infinite,
+            gradient-y 3s ease infinite;
+        }
+        @keyframes podium-particle {
+          0% { transform: translate(0, 0); opacity: 0; }
+          20% { opacity: 0.8; }
+          100% { transform: translate(var(--tx), -40px); opacity: 0; }
+        }
+        .animate-podium-particle {
+          animation: podium-particle 2s ease-out infinite;
+        }
+        @keyframes equalizer { 0% { height: 20%; } 50% { height: 100%; } 100% { height: 20%; } }
+        .animate-equalizer {
+          animation: equalizer 0.8s ease-in-out infinite;
+        }
+        .animate-equalizer-gradient {
+          animation: equalizer 0.8s ease-in-out infinite, gradient-y 3s ease infinite;
+        }
         .dark .animate-nav-active {
           animation: gradient-x 3s ease infinite, nav-glow-pulse-dark 2s ease-in-out infinite;
         }
@@ -1626,6 +2285,14 @@ export default function Portfolio() {
           background-size: 200% 200%;
           animation: gradient-x 3s ease infinite, pulse-glow 2s ease-in-out infinite;
         }
+        @keyframes float-bubble {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes scroll-text {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
         @keyframes spotlight-pulse {
           0%, 100% { opacity: 0.6; }
           50% { opacity: 1; }
@@ -1637,6 +2304,29 @@ export default function Portfolio() {
         .dark ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #2563eb, #a855f7, #2563eb); border-radius: 5px; }
         ::-webkit-scrollbar-thumb:hover { background: linear-gradient(to bottom, #1d4ed8, #9333ea, #1d4ed8); }
+        
+        .animate-scroll-text {
+          animation: scroll-text 10s linear infinite;
+        }
+        @keyframes spotlight-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spotlight-spin {
+          animation: spotlight-spin 8s linear infinite;
+        }
+        @keyframes wave-pulse {
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(1.15); }
+        }
+        .animate-wave-pulse {
+          animation: wave-pulse 1s ease-in-out infinite;
+          transform-origin: bottom;
+        }
+        .animate-wave-live {
+          animation: wave-pulse 1s ease-in-out infinite, gradient-y 3s ease infinite;
+          transform-origin: bottom;
+        }
 
         /* Carousel Scrollbar */
         .carousel-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -1709,13 +2399,16 @@ export default function Portfolio() {
         html.retro ::-webkit-scrollbar-track {
           background: #000000 !important;
         }
-        html.retro .bg-gradient-to-r, html.retro .bg-gradient-to-b,
+        html.retro .bg-gradient-to-r, html.retro .bg-gradient-to-b, html.retro .podium-bar,
         html.retro .animate-gradient-x, html.retro .animate-nav-active, html.retro .animate-timeline-dot {
           background: #00ff00 !important;
           animation: none !important;
           box-shadow: none !important;
         }
-        html.retro .bg-gradient-to-t {
+        html.retro .podium-bar {
+          height: 100% !important;
+        }
+        html.retro .testimonial-fade {
           display: none !important;
         }
         html.retro .text-transparent {
@@ -1771,7 +2464,10 @@ export default function Portfolio() {
         html.cyberpunk .bg-gradient-to-r, html.cyberpunk .bg-gradient-to-b {
           background: linear-gradient(90deg, #ff00ff, #00f3ff) !important;
         }
-        html.cyberpunk .bg-gradient-to-t {
+        html.cyberpunk .podium-bar {
+          background: linear-gradient(to top, #00f3ff, #ff00ff) !important;
+        }
+        html.cyberpunk .testimonial-fade {
           display: none !important;
         }
         html.cyberpunk .text-transparent {
@@ -1859,16 +2555,26 @@ export default function Portfolio() {
                 className="text-blue-600 dark:text-blue-400"
               />
             </div>
-            <span
-              className={`tracking-tight glitch cursor-pointer ${glitchActive ? "active-glitch" : ""}`}
-              data-text="JACOB BENJAMIN"
+            <div
+              className="flex flex-col sm:flex-row sm:gap-2 leading-none sm:leading-normal text-sm sm:text-lg"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleTheme("cyberpunk");
               }}
             >
-              JACOB BENJAMIN
-            </span>
+              <span
+                className={`tracking-tight glitch cursor-pointer ${glitchActive ? "active-glitch" : ""}`}
+                data-text="JACOB"
+              >
+                JACOB
+              </span>
+              <span
+                className={`tracking-tight glitch cursor-pointer ${glitchActive ? "active-glitch" : ""}`}
+                data-text="BENJAMIN"
+              >
+                BENJAMIN
+              </span>
+            </div>
             <span className="text-slate-400 dark:text-slate-500 font-normal ml-2 text-xs sm:text-lg">
               <Typewriter words={greetings} />
             </span>
@@ -1894,6 +2600,10 @@ export default function Portfolio() {
                 <Moon size={20} />
               )}
             </button>
+            <LastFmNowPlaying
+              onClick={() => setShowMusicStats(true)}
+              theme={specialTheme}
+            />
           </div>
         </div>
       </SpotlightCard>
@@ -1925,7 +2635,8 @@ export default function Portfolio() {
                   {personalInfo.name}
                 </h1>
                 <p className="text-xl text-slate-600 dark:text-slate-300">
-                  {personalInfo.title}
+                  <span className="block sm:inline">{personalInfo.title.split(" & ")[0]}</span>
+                  <span className="block sm:inline"> & {personalInfo.title.split(" & ")[1]}</span>
                 </p>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-6 mt-2">
                   <a
@@ -2501,6 +3212,7 @@ export default function Portfolio() {
           </div>
         </div>
       </SpotlightCard>
+      {showMusicStats && <MusicStatsModal onClose={() => setShowMusicStats(false)} theme={specialTheme} stats={musicStats} loading={musicLoading} isRefreshing={musicRefreshing} />}
     </div>
   );
 }
