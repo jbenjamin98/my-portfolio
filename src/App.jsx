@@ -1144,7 +1144,7 @@ const LastFmNowPlaying = ({ onClick, theme }) => {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 max-w-[200px] group"
+      className="flex items-center sm:gap-2 p-2 sm:px-3 sm:py-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 sm:bg-slate-100 sm:dark:bg-slate-800 sm:hover:bg-slate-200 sm:dark:hover:bg-slate-700 transition-colors sm:border sm:border-slate-200 sm:dark:border-slate-700 max-w-[200px] group"
     >
       <div className="relative flex items-center justify-center shrink-0 w-4 h-4">
         {isPlaying ? (
@@ -1156,7 +1156,7 @@ const LastFmNowPlaying = ({ onClick, theme }) => {
           />
         )}
       </div>
-      <div className="flex flex-col text-left overflow-hidden w-[120px]">
+      <div className="hidden sm:flex flex-col text-left overflow-hidden w-[120px]">
         <div className="relative h-[14px] w-full overflow-hidden">
           <AutoScrollText>
             <span className="text-[10px] font-bold text-slate-900 dark:text-white">
@@ -1251,6 +1251,9 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
   const [period, setPeriod] = useState("7day");
   const scrollRef = useRef(null);
 
+  const currentTrack = stats.recent[0];
+  const isNowPlaying = currentTrack?.["@attr"]?.nowplaying === "true";
+
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -1258,7 +1261,101 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
     };
   }, []);
 
+  const TrackItem = ({ track, maxPlays, index }) => {
+    const ref = useRef(null);
+    const [isInView, setIsInView] = useState(false);
+  
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsInView(entry.isIntersecting);
+        },
+        { rootMargin: "200px 0px" }
+      );
+  
+      const currentRef = ref.current;
+      if (currentRef) {
+        observer.observe(currentRef);
+      }
+  
+      return () => {
+        if (currentRef) {
+          observer.unobserve(currentRef);
+        }
+      };
+    }, []);
+  
+    const plays = parseInt(track.playcount);
+    const percentage = (plays / maxPlays) * 100;
+    const totalBars = Math.min(50, maxPlays);
+  
+    return (
+      <div ref={ref} className="relative group">
+        <div className="flex items-center justify-between text-sm mb-1 relative z-10">
+          <div className="flex items-center gap-3 min-w-0 overflow-hidden flex-1">
+            <span className="text-slate-400 font-mono w-6 text-right shrink-0">#{index + 1}</span>
+            <AutoScrollText containerClassName="flex-1">
+              <span className="font-bold text-slate-900 dark:text-white">{track.name}</span>
+              <span className="text-slate-400 mx-2 text-xs">•</span>
+              <span className="text-slate-500 text-xs">{track.artist.name}</span>
+            </AutoScrollText>
+          </div>
+          <div className="font-mono text-slate-500 text-xs shrink-0 ml-4">
+            <AnimatedCounter value={`${plays.toLocaleString()} plays`} />
+          </div>
+        </div>
+        
+        <div className="flex items-end gap-[1px] h-8 w-full mt-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300" title={`${plays.toLocaleString()} plays`}>
+          {Array.from({ length: totalBars }).map((_, barIdx) => {
+            const barPercent = ((barIdx + 1) / totalBars) * 100;
+            const isFilled = barPercent <= percentage + 0.1;
+            const height = Math.max(15, (Math.sin(barIdx * 0.5 + index * 0.8) * 0.5 + 0.5) * 80 + 20);
+            
+            return (
+              <div
+                key={barIdx}
+                className={`flex-1 rounded-t-sm transition-all duration-300 group-hover:brightness-125 ${
+                  isFilled 
+                    ? `bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:100%_200%] ${isInView ? "animate-wave-pulse" : ""}` 
+                    : `bg-slate-200 dark:bg-slate-800 opacity-30 ${isInView ? "animate-wave-pulse" : ""}`
+                }`}
+                style={{ 
+                  height: `${height}%`, 
+                  animationDelay: `${(barIdx * 50) % 1000}ms`,
+                  animationDuration: `${1500 + (barIdx * 100) % 1000}ms`,
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderArtists = (data) => {
+    const ref = useRef(null);
+    const [isInView, setIsInView] = useState(false);
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsInView(entry.isIntersecting);
+        },
+        { rootMargin: "200px 0px" }
+      );
+
+      const currentRef = ref.current;
+      if (currentRef) {
+        observer.observe(currentRef);
+      }
+
+      return () => {
+        if (currentRef) {
+          observer.unobserve(currentRef);
+        }
+      };
+    }, []);
+
     if (!data || data.length === 0)
       return <div className="text-center text-slate-500 py-10">No data available</div>;
 
@@ -1267,7 +1364,7 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
     const podiumIndices = [3, 1, 0, 2, 4]; // 4th, 2nd, 1st, 3rd, 5th
 
     return (
-      <div className="flex flex-col gap-8 p-4">
+      <div ref={ref} className="flex flex-col gap-8 p-4">
         <div className="flex justify-center items-end gap-1 sm:gap-2 min-h-[220px] pb-4 border-b border-slate-100 dark:border-slate-800">
           {podiumIndices.map((dataIndex) => {
             const artist = displayData[dataIndex];
@@ -1308,13 +1405,13 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                  </div>
                  <div className={`w-full ${heightClass} relative flex items-end justify-center`}>
                     <div 
-                      className={`absolute bottom-0 w-full ${colorClass} podium-bar border-t border-x rounded-t-lg shadow-sm animate-podium-live flex justify-center pt-4`} 
+                      className={`absolute bottom-0 w-full ${colorClass} podium-bar border-t border-x rounded-t-lg shadow-sm ${isInView ? 'animate-podium-live' : ''} flex justify-center pt-4`} 
                       style={{ animationDelay: `${delay}ms, ${delay + 1000}ms, ${delay}ms` }}
                     >
                       {isFirst && (
                         <div 
-                          className="z-20 cursor-pointer opacity-0 animate-popIn"
-                          style={{ animationDelay: `${delay + 1000}ms` }}
+                          className={`z-20 cursor-pointer ${isInView ? 'opacity-0 animate-popIn' : 'opacity-0'}`}
+                          style={{ animationDelay: isInView ? `${delay + 1000}ms` : '0ms' }}
                           onClick={(e) => {
                              e.stopPropagation();
                              triggerConfetti(e.clientX, e.clientY);
@@ -1506,28 +1603,62 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
               <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 cursor-pointer w-fit" onClick={() => setPeriod(period === '7day' ? 'overall' : '7day')}>
-                  <div
-                    className={`absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700 rounded-full shadow-sm transition-all duration-300 ease-in-out ${
-                      period === 'overall' ? 'translate-x-[100%]' : 'translate-x-0'
-                    }`}
-                  />
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setPeriod("7day"); }}
-                    className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "7day" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
-                  >
-                    Last 7 Days
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setPeriod("overall"); }}
-                    className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "overall" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
-                  >
-                    All Time
-                  </button>
+            <div className="space-y-6 pb-24">
+              {isNowPlaying && currentTrack && (
+                <div className="mb-2">
+                  <h3 className="text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+                    <Equalizer theme={theme} /> Now Playing
+                  </h3>
+                  <div className={`relative overflow-hidden flex items-center gap-3 p-3 rounded-lg border ${
+                      theme === "cyberpunk" ? "bg-[#00f3ff]/5 border-[#00f3ff]/30" : 
+                      theme === "retro" ? "bg-[#00ff00]/5 border-[#00ff00]/30" : 
+                      "bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                    }`}>
+                    <div className="absolute bottom-0 left-0 right-0 h-1.5 flex items-end gap-0.5 opacity-60 px-3">
+                      {Array.from({ length: 40 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex-1 rounded-t-sm ${
+                            theme === "cyberpunk"
+                              ? "bg-[#00f3ff] animate-equalizer"
+                              : theme === "retro"
+                              ? "bg-[#00ff00] animate-equalizer"
+                              : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
+                          }`}
+                          style={{
+                            animationDuration: (theme === "cyberpunk" || theme === "retro")
+                              ? `${0.4 + Math.random() * 0.6}s`
+                              : `${0.4 + Math.random() * 0.6}s, 3s`,
+                            animationDelay: `${Math.random() * 0.5}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="shrink-0 w-12 h-12 rounded overflow-hidden bg-slate-200 dark:bg-slate-700 relative z-10">
+                      <img
+                        src={currentTrack.image[2]["#text"] || currentTrack.image[1]["#text"]}
+                        alt={currentTrack.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 relative z-10">
+                      <div className="font-bold text-slate-900 dark:text-white text-base truncate">{currentTrack.name}</div>
+                      <div className="text-slate-500 text-sm truncate">{currentTrack.artist["#text"]}</div>
+                    </div>
+                    <div className={`relative z-10 ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-sm ${
+                        theme === "cyberpunk" ? "bg-[#00f3ff]/10 border border-[#00f3ff]/50 text-[#00f3ff]" : 
+                        theme === "retro" ? "bg-[#00ff00]/10 border border-[#00ff00]/50 text-[#00ff00]" : 
+                        "bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-300"
+                      }`}>
+                      <span className="relative flex h-2 w-2">
+                        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${theme === "cyberpunk" ? "bg-[#00f3ff]" : theme === "retro" ? "bg-[#00ff00]" : "bg-blue-400"}`}></span>
+                        <span className={`relative inline-flex rounded-full h-2 w-2 ${theme === "cyberpunk" ? "bg-[#00f3ff]" : theme === "retro" ? "bg-[#00ff00]" : "bg-blue-500"}`}></span>
+                      </span>
+                      Playing
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-12">
                 <section>
@@ -1556,7 +1687,7 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                     <Calendar className="text-blue-500" size={20} /> Recent Listening
                   </h3>
                   <div className="space-y-2 px-4">
-                    {stats.recent.slice(0, 9).map((track, i) => {
+                    {stats.recent.slice(isNowPlaying ? 1 : 0, 9).map((track, i) => {
                       const isNowPlaying = track["@attr"]?.nowplaying;
                       return (
                         <div
@@ -1636,6 +1767,31 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
           )}
         </div>
         </div>
+        {!loading && (
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none animate-floatIn" style={{ animationDelay: '0.2s' }}>
+            <div className="pointer-events-auto shadow-2xl rounded-full p-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-700">
+              <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-full p-1 cursor-pointer w-fit" onClick={() => setPeriod(period === '7day' ? 'overall' : '7day')}>
+                <div
+                  className={`absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700 rounded-full shadow-sm transition-all duration-300 ease-in-out ${
+                    period === 'overall' ? 'translate-x-[100%]' : 'translate-x-0'
+                  }`}
+                />
+                <button
+                  onClick={(e) => { e.stopPropagation(); setPeriod("7day"); }}
+                  className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "7day" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
+                >
+                  Last 7 Days
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setPeriod("overall"); }}
+                  className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-300 ${period === "overall" ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
+                >
+                  All Time
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </SpotlightCard>
     </div>
   );
@@ -2108,9 +2264,9 @@ export default function Portfolio() {
         }
 
         section { min-height: 20vh; }
-        .animate-floatIn { animation: floatIn 0.6s ease-out forwards; opacity: 0; }
+        .animate-floatIn { animation: floatIn 0.6s ease-out forwards; opacity: 0; will-change: transform, opacity; }
         @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-popIn { animation: popIn 0.4s ease-out forwards; opacity: 0; }
+        .animate-popIn { animation: popIn 0.4s ease-out forwards; opacity: 0; will-change: transform, opacity; }
         @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .animate-skill { animation: popIn 0.4s ease-out forwards, drift 6s ease-in-out infinite; opacity: 0; }
         @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -2322,6 +2478,7 @@ export default function Portfolio() {
         .animate-wave-pulse {
           animation: wave-pulse 1s ease-in-out infinite;
           transform-origin: bottom;
+          will-change: transform;
         }
         .animate-wave-live {
           animation: wave-pulse 1s ease-in-out infinite, gradient-y 3s ease infinite;
