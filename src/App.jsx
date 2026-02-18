@@ -1247,12 +1247,292 @@ const AutoScrollText = ({ children, className = "", containerClassName = "", ali
   );
 };
 
+const TrackItem = ({ track, maxPlays, index }) => {
+  const ref = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, []);
+
+  const plays = parseInt(track.playcount);
+  const percentage = (plays / maxPlays) * 100;
+  const totalBars = Math.min(50, maxPlays);
+
+  return (
+    <div ref={ref} className="relative group">
+      <div className="flex items-center justify-between text-sm mb-1 relative z-10">
+        <div className="flex items-center gap-3 min-w-0 overflow-hidden flex-1">
+          <span className="text-slate-400 font-mono w-6 text-right shrink-0">#{index + 1}</span>
+          <AutoScrollText containerClassName="flex-1">
+            <span className="font-bold text-slate-900 dark:text-white">{track.name}</span>
+            <span className="text-slate-400 mx-2 text-xs">•</span>
+            <span className="text-slate-500 text-xs">{track.artist.name}</span>
+          </AutoScrollText>
+        </div>
+        <div className="font-mono text-slate-500 text-xs shrink-0 ml-4">
+          <AnimatedCounter value={`${plays.toLocaleString()} plays`} />
+        </div>
+      </div>
+      
+      <div className="flex items-end gap-[1px] h-8 w-full mt-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300" title={`${plays.toLocaleString()} plays`}>
+        {Array.from({ length: totalBars }).map((_, barIdx) => {
+          const barPercent = ((barIdx + 1) / totalBars) * 100;
+          const isFilled = barPercent <= percentage + 0.1;
+          const height = Math.max(15, (Math.sin(barIdx * 0.5 + index * 0.8) * 0.5 + 0.5) * 80 + 20);
+          
+          return (
+            <div
+              key={barIdx}
+              className={`flex-1 rounded-t-sm transition-all duration-300 group-hover:brightness-125 ${
+                isFilled 
+                  ? `bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:100%_200%] ${isInView ? "animate-wave-pulse" : ""}` 
+                  : `bg-slate-200 dark:bg-slate-800 opacity-30 ${isInView ? "animate-wave-pulse" : ""}`
+              }`}
+              style={{ 
+                height: `${height}%`, 
+                animationDelay: `${(barIdx * 50) % 1000}ms`,
+                animationDuration: `${1500 + (barIdx * 100) % 1000}ms`,
+              }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const ArtistsList = ({ data, theme }) => {
+  const ref = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { rootMargin: "200px 0px" }
+    );
+
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, []);
+
+  if (!data || data.length === 0)
+    return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+  const displayData = data.slice(0, 9);
+  const rest = displayData.slice(5);
+  const podiumIndices = [3, 1, 0, 2, 4]; // 4th, 2nd, 1st, 3rd, 5th
+
+  return (
+    <div ref={ref} className="flex flex-col gap-8 p-4">
+      <div className="flex justify-center items-end gap-1 sm:gap-2 min-h-[220px] pb-4 border-b border-slate-100 dark:border-slate-800">
+        {podiumIndices.map((dataIndex) => {
+          const artist = displayData[dataIndex];
+          if (!artist) return null;
+          
+          const rank = dataIndex + 1;
+          const isFirst = rank === 1;
+          
+          let heightClass = "h-16";
+          let rankSizeClass = "text-lg";
+
+          if (rank === 1) {
+            heightClass = "h-48";
+            rankSizeClass = "text-4xl";
+          } else if (rank === 2) {
+            heightClass = "h-40";
+            rankSizeClass = "text-3xl";
+          } else if (rank === 3) {
+            heightClass = "h-32";
+            rankSizeClass = "text-2xl";
+          } else if (rank === 4) {
+            heightClass = "h-24";
+            rankSizeClass = "text-xl";
+          }
+
+          let colorClass = "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 opacity-80 border-blue-400/30 bg-[length:200%_200%]";
+          const delay = dataIndex * 100 + 200;
+          
+          return (
+            <div key={artist.name} className={`flex flex-col items-center w-1/5 max-w-[100px] group animate-popIn`} style={{ animationDelay: `${dataIndex * 100}ms` }}>
+               <div className={`mb-2 text-center transition-transform duration-300 ${isFirst ? "group-hover:-translate-y-2" : ""}`}>
+                  <div className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight text-[10px] sm:text-xs mb-1">
+                      {artist.name}
+                  </div>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm">
+                      <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
+                  </span>
+               </div>
+               <div className={`w-full ${heightClass} relative flex items-end justify-center`}>
+                  <div 
+                    className={`absolute bottom-0 w-full h-full ${colorClass} podium-bar border-t border-x rounded-t-lg shadow-sm ${isInView ? 'animate-podium-live' : ''} flex justify-center pt-4`} 
+                    style={{ animationDelay: `${delay}ms, ${delay + 1000}ms, ${delay}ms` }}
+                  >
+                    {isFirst && (
+                      <div 
+                        className={`z-20 cursor-pointer ${isInView ? 'opacity-0 animate-popIn' : 'opacity-0'}`}
+                        style={{ animationDelay: isInView ? `${delay + 1000}ms` : '0ms' }}
+                        onClick={(e) => {
+                           e.stopPropagation();
+                           triggerConfetti(e.clientX, e.clientY);
+                        }}
+                      >
+                         <Crown size={28} className={`${theme === 'retro' ? 'text-[#00ff00] fill-[#00ff00]' : 'text-yellow-400 fill-yellow-400'} animate-bob drop-shadow-lg`} />
+                      </div>
+                    )}
+                  </div>
+                  <span className={`relative z-10 font-black ${rankSizeClass} text-white opacity-90 pb-2`}>
+                      {rank}
+                  </span>
+               </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {rest.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {rest.map((artist, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors animate-popIn" style={{ animationDelay: `${(i + 5) * 50}ms` }}>
+                      <div className="flex items-center gap-3 min-w-0">
+                          <span className="font-mono text-slate-400 text-sm w-6 text-center font-bold">#{i + 6}</span>
+                          <span className="font-medium text-slate-900 dark:text-white truncate text-sm">{artist.name}</span>
+                      </div>
+                      <span className="text-xs font-mono text-slate-500 font-medium shrink-0 ml-2">
+                        <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
+                      </span>
+                  </div>
+              ))}
+          </div>
+      )}
+    </div>
+  );
+};
+
+const AlbumsList = ({ data }) => {
+  if (!data || data.length === 0)
+    return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+  const displayData = data.slice(0, 9);
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 p-2 min-h-[300px] grid-flow-dense">
+      {displayData.map((album, i) => {
+        let gridClass = "col-span-1 row-span-1 aspect-square";
+        if (i === 0) gridClass = "col-span-2 row-span-2 md:col-span-3 md:row-span-3 aspect-square";
+        else if (i === 1) gridClass = "col-span-1 row-span-1 md:col-span-2 md:row-span-2 aspect-square";
+
+        const img = album.image?.[3]?.["#text"] || album.image?.[2]?.["#text"];
+
+        return (
+          <div
+            key={i}
+            className={`relative group overflow-hidden rounded-xl ${gridClass} bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-popIn`}
+            style={{ animationDelay: `${i * 100}ms` }}
+          >
+            {img ? (
+              <img
+                src={img}
+                alt={album.name}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <Disc size={i === 0 ? 48 : 24} />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm rounded-xl z-10">
+              <AutoScrollText
+                align="center"
+                containerClassName="mb-1"
+              >
+                <span className={`font-bold text-white ${i === 0 ? "text-lg" : i === 1 ? "text-[10px] md:text-lg" : "text-[10px]"}`}>
+                  {album.name}
+                </span>
+              </AutoScrollText>
+              <AutoScrollText align="center" containerClassName="mt-1">
+                <span className={`text-slate-300 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>{album.artist.name}</span>
+              </AutoScrollText>
+              <span className={`text-emerald-400 font-bold mt-1 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>
+                <AnimatedCounter value={`${parseInt(album.playcount).toLocaleString()} plays`} />
+              </span>
+            </div>
+            <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-gradient-x backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg z-20">
+              #{i + 1}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const TracksList = ({ data }) => {
+  if (!data || data.length === 0)
+    return <div className="text-center text-slate-500 py-10">No data available</div>;
+
+  const displayData = data.slice(0, 9);
+  const maxPlays = parseInt(displayData[0].playcount);
+
+  return (
+    <div className="space-y-4 p-4 min-h-[300px]">
+      {displayData.map((track, i) => (
+        <TrackItem key={i} track={track} maxPlays={maxPlays} index={i} />
+      ))}
+    </div>
+  );
+};
+
 const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
   const [period, setPeriod] = useState("7day");
   const scrollRef = useRef(null);
 
-  const currentTrack = stats.recent[0];
+  const currentTrack = stats?.recent?.[0];
   const isNowPlaying = currentTrack?.["@attr"]?.nowplaying === "true";
+
+  const [showSkeleton, setShowSkeleton] = useState(loading);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  useEffect(() => {
+    if (loading) {
+      setShowSkeleton(true);
+      setIsFadingOut(false);
+    } else {
+      setIsFadingOut(true);
+      const timer = setTimeout(() => {
+        setShowSkeleton(false);
+        setIsFadingOut(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -1261,317 +1541,69 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
     };
   }, []);
 
-  const TrackItem = ({ track, maxPlays, index }) => {
-    const ref = useRef(null);
-    const [isInView, setIsInView] = useState(false);
-  
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          setIsInView(entry.isIntersecting);
-        },
-        { rootMargin: "200px 0px" }
-      );
-  
-      const currentRef = ref.current;
-      if (currentRef) {
-        observer.observe(currentRef);
-      }
-  
-      return () => {
-        if (currentRef) {
-          observer.unobserve(currentRef);
-        }
-      };
-    }, []);
-  
-    const plays = parseInt(track.playcount);
-    const percentage = (plays / maxPlays) * 100;
-    const totalBars = Math.min(50, maxPlays);
-  
-    return (
-      <div ref={ref} className="relative group">
-        <div className="flex items-center justify-between text-sm mb-1 relative z-10">
-          <div className="flex items-center gap-3 min-w-0 overflow-hidden flex-1">
-            <span className="text-slate-400 font-mono w-6 text-right shrink-0">#{index + 1}</span>
-            <AutoScrollText containerClassName="flex-1">
-              <span className="font-bold text-slate-900 dark:text-white">{track.name}</span>
-              <span className="text-slate-400 mx-2 text-xs">•</span>
-              <span className="text-slate-500 text-xs">{track.artist.name}</span>
-            </AutoScrollText>
+  const renderSkeleton = () => (
+    <div className="space-y-12 pb-24">
+      {/* Now Playing Skeleton */}
+      <div className="h-32 w-full bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+        <div className="absolute inset-0 animate-shimmer" />
+      </div>
+
+      {/* Top Artists Skeleton */}
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer" />
+        </div>
+        <div className="flex items-end justify-center gap-2 h-[220px] pb-4 border-b border-slate-100 dark:border-slate-800">
+           {[1, 2, 3, 4, 5].map((i) => (
+             <div key={i} className={`w-1/5 bg-slate-200 dark:bg-slate-800 rounded-t-lg relative overflow-hidden ${i === 3 ? 'h-48' : i === 2 || i === 4 ? 'h-32' : 'h-16'}`}>
+               <div className="absolute inset-0 animate-shimmer" />
+             </div>
+           ))}
+        </div>
+      </div>
+
+      {/* Top Albums Skeleton */}
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="col-span-2 row-span-2 aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl relative overflow-hidden">
+            <div className="absolute inset-0 animate-shimmer" />
           </div>
-          <div className="font-mono text-slate-500 text-xs shrink-0 ml-4">
-            <AnimatedCounter value={`${plays.toLocaleString()} plays`} />
-          </div>
-        </div>
-        
-        <div className="flex items-end gap-[1px] h-8 w-full mt-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300" title={`${plays.toLocaleString()} plays`}>
-          {Array.from({ length: totalBars }).map((_, barIdx) => {
-            const barPercent = ((barIdx + 1) / totalBars) * 100;
-            const isFilled = barPercent <= percentage + 0.1;
-            const height = Math.max(15, (Math.sin(barIdx * 0.5 + index * 0.8) * 0.5 + 0.5) * 80 + 20);
-            
-            return (
-              <div
-                key={barIdx}
-                className={`flex-1 rounded-t-sm transition-all duration-300 group-hover:brightness-125 ${
-                  isFilled 
-                    ? `bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:100%_200%] ${isInView ? "animate-wave-pulse" : ""}` 
-                    : `bg-slate-200 dark:bg-slate-800 opacity-30 ${isInView ? "animate-wave-pulse" : ""}`
-                }`}
-                style={{ 
-                  height: `${height}%`, 
-                  animationDelay: `${(barIdx * 50) % 1000}ms`,
-                  animationDuration: `${1500 + (barIdx * 100) % 1000}ms`,
-                }}
-              />
-            );
-          })}
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="col-span-1 row-span-1 aspect-square bg-slate-200 dark:bg-slate-800 rounded-xl relative overflow-hidden">
+              <div className="absolute inset-0 animate-shimmer" />
+            </div>
+          ))}
         </div>
       </div>
-    );
-  };
 
-  const renderArtists = (data) => {
-    const ref = useRef(null);
-    const [isInView, setIsInView] = useState(false);
-
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          setIsInView(entry.isIntersecting);
-        },
-        { rootMargin: "200px 0px" }
-      );
-
-      const currentRef = ref.current;
-      if (currentRef) {
-        observer.observe(currentRef);
-      }
-
-      return () => {
-        if (currentRef) {
-          observer.unobserve(currentRef);
-        }
-      };
-    }, []);
-
-    if (!data || data.length === 0)
-      return <div className="text-center text-slate-500 py-10">No data available</div>;
-
-    const displayData = data.slice(0, 9);
-    const rest = displayData.slice(5);
-    const podiumIndices = [3, 1, 0, 2, 4]; // 4th, 2nd, 1st, 3rd, 5th
-
-    return (
-      <div ref={ref} className="flex flex-col gap-8 p-4">
-        <div className="flex justify-center items-end gap-1 sm:gap-2 min-h-[220px] pb-4 border-b border-slate-100 dark:border-slate-800">
-          {podiumIndices.map((dataIndex) => {
-            const artist = displayData[dataIndex];
-            if (!artist) return null;
-            
-            const rank = dataIndex + 1;
-            const isFirst = rank === 1;
-            
-            let heightClass = "h-16";
-            let rankSizeClass = "text-lg";
-
-            if (rank === 1) {
-              heightClass = "h-48";
-              rankSizeClass = "text-4xl";
-            } else if (rank === 2) {
-              heightClass = "h-40";
-              rankSizeClass = "text-3xl";
-            } else if (rank === 3) {
-              heightClass = "h-32";
-              rankSizeClass = "text-2xl";
-            } else if (rank === 4) {
-              heightClass = "h-24";
-              rankSizeClass = "text-xl";
-            }
-
-            let colorClass = "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 opacity-80 border-blue-400/30 bg-[length:200%_200%]";
-            const delay = dataIndex * 100 + 200;
-            
-            return (
-              <div key={artist.name} className={`flex flex-col items-center w-1/5 max-w-[100px] group animate-popIn`} style={{ animationDelay: `${dataIndex * 100}ms` }}>
-                 <div className={`mb-2 text-center transition-transform duration-300 ${isFirst ? "group-hover:-translate-y-2" : ""}`}>
-                    <div className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight text-[10px] sm:text-xs mb-1">
-                        {artist.name}
-                    </div>
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-sm">
-                        <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
-                    </span>
-                 </div>
-                 <div className={`w-full ${heightClass} relative flex items-end justify-center`}>
-                    <div 
-                      className={`absolute bottom-0 w-full ${colorClass} podium-bar border-t border-x rounded-t-lg shadow-sm ${isInView ? 'animate-podium-live' : ''} flex justify-center pt-4`} 
-                      style={{ animationDelay: `${delay}ms, ${delay + 1000}ms, ${delay}ms` }}
-                    >
-                      {isFirst && (
-                        <div 
-                          className={`z-20 cursor-pointer ${isInView ? 'opacity-0 animate-popIn' : 'opacity-0'}`}
-                          style={{ animationDelay: isInView ? `${delay + 1000}ms` : '0ms' }}
-                          onClick={(e) => {
-                             e.stopPropagation();
-                             triggerConfetti(e.clientX, e.clientY);
-                          }}
-                        >
-                           <Crown size={28} className={`${theme === 'retro' ? 'text-[#00ff00] fill-[#00ff00]' : 'text-yellow-400 fill-yellow-400'} animate-bob drop-shadow-lg`} />
-                        </div>
-                      )}
-                    </div>
-                    <span className={`relative z-10 font-black ${rankSizeClass} text-white opacity-90 pb-2`}>
-                        {rank}
-                    </span>
-                 </div>
-              </div>
-            );
-          })}
+      {/* Top Tracks Skeleton */}
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-slate-200 dark:bg-slate-700 rounded relative overflow-hidden">
+          <div className="absolute inset-0 animate-shimmer" />
         </div>
-
-        {rest.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {rest.map((artist, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors animate-popIn" style={{ animationDelay: `${(i + 5) * 50}ms` }}>
-                        <div className="flex items-center gap-3 min-w-0">
-                            <span className="font-mono text-slate-400 text-sm w-6 text-center font-bold">#{i + 6}</span>
-                            <span className="font-medium text-slate-900 dark:text-white truncate text-sm">{artist.name}</span>
-                        </div>
-                        <span className="text-xs font-mono text-slate-500 font-medium shrink-0 ml-2">
-                          <AnimatedCounter value={`${parseInt(artist.playcount).toLocaleString()} plays`} />
-                        </span>
-                    </div>
-                ))}
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="space-y-2">
+               <div className="flex justify-between">
+                  <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded relative overflow-hidden">
+                    <div className="absolute inset-0 animate-shimmer" />
+                  </div>
+                  <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded relative overflow-hidden">
+                    <div className="absolute inset-0 animate-shimmer" />
+                  </div>
+               </div>
+               <div className="h-8 w-full bg-slate-100 dark:bg-slate-800/50 rounded-sm relative overflow-hidden">
+                 <div className="absolute inset-0 animate-shimmer" />
+               </div>
             </div>
-        )}
+          ))}
+        </div>
       </div>
-    );
-  };
-
-  const renderAlbums = (data) => {
-    if (!data || data.length === 0)
-      return <div className="text-center text-slate-500 py-10">No data available</div>;
-
-    // Show 9 albums
-    const displayData = data.slice(0, 9);
-
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 p-2 min-h-[300px] grid-flow-dense">
-        {displayData.map((album, i) => {
-          // Grid layout logic for top 3 items
-          let gridClass = "col-span-1 row-span-1 aspect-square";
-          if (i === 0) gridClass = "col-span-2 row-span-2 md:col-span-3 md:row-span-3 aspect-square";
-          else if (i === 1) gridClass = "col-span-1 row-span-1 md:col-span-2 md:row-span-2 aspect-square";
-
-          const img = album.image?.[3]?.["#text"] || album.image?.[2]?.["#text"];
-
-          return (
-            <div
-              key={i}
-              className={`relative group overflow-hidden rounded-xl ${gridClass} bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 animate-popIn`}
-              style={{ animationDelay: `${i * 100}ms` }}
-            >
-              {img ? (
-                <img
-                  src={img}
-                  alt={album.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-400">
-                  <Disc size={i === 0 ? 48 : 24} />
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-2 text-center backdrop-blur-sm rounded-xl z-10">
-                <AutoScrollText
-                  align="center"
-                  containerClassName="mb-1"
-                >
-                  <span className={`font-bold text-white ${i === 0 ? "text-lg" : i === 1 ? "text-[10px] md:text-lg" : "text-[10px]"}`}>
-                    {album.name}
-                  </span>
-                </AutoScrollText>
-                <AutoScrollText align="center" containerClassName="mt-1">
-                  <span className={`text-slate-300 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>{album.artist.name}</span>
-                </AutoScrollText>
-                <span className={`text-emerald-400 font-bold mt-1 ${i === 0 ? "text-xs" : i === 1 ? "text-[9px] md:text-xs" : "text-[9px]"}`}>
-                  <AnimatedCounter value={`${parseInt(album.playcount).toLocaleString()} plays`} />
-                </span>
-              </div>
-              <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-gradient-x backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg z-20">
-                #{i + 1}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderTracks = (data) => {
-    if (!data || data.length === 0)
-      return <div className="text-center text-slate-500 py-10">No data available</div>;
-
-    const displayData = data.slice(0, 9);
-    const maxPlays = parseInt(displayData[0].playcount);
-    const totalBars = Math.min(50, maxPlays);
-
-    return (
-      <div className="space-y-4 p-4 min-h-[300px]">
-        {displayData.map((track, i) => {
-          const plays = parseInt(track.playcount);
-          const percentage = (plays / maxPlays) * 100;
-
-          return (
-            <div key={i} className="relative group">
-              <div className="flex items-center justify-between text-sm mb-1 relative z-10">
-                <div className="flex items-center gap-3 min-w-0 overflow-hidden flex-1">
-                  <span className="text-slate-400 font-mono w-6 text-right shrink-0">#{i + 1}</span>
-                  <AutoScrollText
-                    containerClassName="flex-1"
-                  >
-                    <span className="font-bold text-slate-900 dark:text-white">{track.name}</span>
-                    <span className="text-slate-400 mx-2 text-xs">•</span>
-                    <span className="text-slate-500 text-xs">{track.artist.name}</span>
-                  </AutoScrollText>
-                </div>
-                <div className="font-mono text-slate-500 text-xs shrink-0 ml-4">
-                  <AnimatedCounter value={`${plays.toLocaleString()} plays`} />
-                </div>
-              </div>
-              
-              <div className="flex items-end gap-[1px] h-8 w-full mt-1 opacity-70 group-hover:opacity-100 transition-opacity duration-300" title={`${plays.toLocaleString()} plays`}>
-                {Array.from({ length: totalBars }).map((_, barIdx) => {
-                  const barPercent = ((barIdx + 1) / totalBars) * 100;
-                  const isFilled = barPercent <= percentage + 0.1;
-                  // Deterministic wave height based on track index and bar index
-                  const height = Math.max(15, (Math.sin(barIdx * 0.5 + i * 0.8) * 0.5 + 0.5) * 80 + 20);
-                  
-                  return (
-                    <div
-                      key={barIdx}
-                      className={`flex-1 rounded-t-sm transition-all duration-300 group-hover:brightness-125 ${
-                        isFilled 
-                          ? "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:100%_200%] animate-wave-live" 
-                          : "bg-slate-200 dark:bg-slate-800 animate-wave-pulse"
-                      }`}
-                      style={{ 
-                        height: `${height}%`, 
-                        animationDelay: `${(barIdx * 50) % 1000}ms`,
-                        animationDuration: `${1500 + (barIdx * 100) % 1000}ms`,
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
@@ -1598,11 +1630,10 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
             </button>
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center h-[400px] animate-fadeIn">
-              <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
-            </div>
-          ) : (
+          <div className="grid grid-cols-1 grid-rows-1">
+            {/* Content Layer */}
+            <div className={`col-start-1 row-start-1 transition-opacity duration-500 ${loading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            {!loading && (
             <div className="space-y-6 pb-24">
               {isNowPlaying && currentTrack && (
                 <div className="mb-2">
@@ -1665,21 +1696,21 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
                     <Mic className="text-blue-500" size={20} /> Top Artists
                   </h3>
-                  {renderArtists(stats[period].artists)}
+                  <ArtistsList data={stats[period].artists} theme={theme} />
                 </section>
 
                 <section>
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
                     <Disc className="text-blue-500" size={20} /> Top Albums
                   </h3>
-                  {renderAlbums(stats[period].albums)}
+                  <AlbumsList data={stats[period].albums} />
                 </section>
 
                 <section>
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2 px-4">
                     <Music className="text-blue-500" size={20} /> Top Tracks
                   </h3>
-                  {renderTracks(stats[period].tracks)}
+                  <TracksList data={stats[period].tracks} />
                 </section>
 
                 <section>
@@ -1764,7 +1795,16 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                 </section>
               </div>
             </div>
-          )}
+            )}
+            </div>
+
+            {/* Skeleton Layer */}
+            {showSkeleton && (
+              <div className={`col-start-1 row-start-1 bg-white dark:bg-slate-900 transition-opacity duration-500 z-10 ${isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                {renderSkeleton()}
+              </div>
+            )}
+          </div>
         </div>
         </div>
         {!loading && (
@@ -2301,19 +2341,21 @@ export default function Portfolio() {
         .animate-gradient-y {
           animation: gradient-y 3s ease infinite;
         }
-        @keyframes grow-up { from { height: 0; } to { height: 100%; } }
+        @keyframes grow-up { from { transform: scaleY(0); } to { transform: scaleY(1); } }
         .animate-grow-up {
           animation: grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes podium-bounce {
-          0%, 100% { height: 100%; }
-          50% { height: 80%; }
+          0%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.95); }
         }
         .animate-podium-live {
           animation: 
             grow-up 1s cubic-bezier(0.16, 1, 0.3, 1) forwards,
             podium-bounce 2s ease-in-out infinite,
             gradient-y 3s ease infinite;
+          transform-origin: bottom;
+          will-change: transform;
         }
         @keyframes podium-particle {
           0% { transform: translate(0, 0); opacity: 0; }
@@ -2484,6 +2526,22 @@ export default function Portfolio() {
           animation: wave-pulse 1s ease-in-out infinite, gradient-y 3s ease infinite;
           transform-origin: bottom;
         }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+          animation: shimmer 1.5s infinite;
+        }
+        .dark .animate-shimmer {
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
 
         /* Carousel Scrollbar */
         .carousel-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -2564,6 +2622,9 @@ export default function Portfolio() {
         }
         html.retro .podium-bar {
           height: 100% !important;
+        }
+        .podium-bar {
+          transform: scaleY(0);
         }
         html.retro .testimonial-fade {
           display: none !important;
