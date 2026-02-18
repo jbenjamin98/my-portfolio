@@ -1109,7 +1109,7 @@ const LastFmNowPlaying = ({ onClick, theme }) => {
   useEffect(() => {
     const fetchNowPlaying = async () => {
       try {
-        const apiKey = "20c3955130940869727729517e527b8f";
+        const apiKey = import.meta.env.VITE_LASTFM_API_KEY;
         const user = "jbenjamin98";
         const response = await fetch(
           `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${user}&api_key=${apiKey}&format=json&limit=1`,
@@ -1665,7 +1665,7 @@ export default function Portfolio() {
   useEffect(() => {
     const fetchData = async (isBackground = false) => {
       if (isBackground) setMusicRefreshing(true);
-      const apiKey = "20c3955130940869727729517e527b8f";
+      const apiKey = import.meta.env.VITE_LASTFM_API_KEY;
       const user = "jbenjamin98";
       const limit = 9; // Top 9
 
