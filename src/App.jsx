@@ -164,9 +164,8 @@ const certImages = import.meta.glob("./assets/*.{png,jpg,jpeg,svg,webp}", {
 const SpotlightCard = ({
   children,
   className = "",
-  as: Component = "div",
+  as = "div",
   enableTilt = false,
-  noScrollTilt = false,
   ...props
 }) => {
   const divRef = useRef(null);
@@ -241,7 +240,7 @@ const SpotlightCard = ({
           (viewportHeight - rect.top) / (viewportHeight + rect.height);
         const y = progress * rect.height;
 
-        overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%), ${noiseUrl}`;
+        overlayRef.current.style.background = `radial-gradient(600px circle at ${x}px ${y}px, var(--spotlight-color-1, rgba(37, 99, 235, 0.15)), var(--spotlight-color-2, rgba(168, 85, 247, 0.15)), transparent 40%)`;
         overlayRef.current.style.opacity = "0.6";
       }
     };
@@ -270,6 +269,8 @@ const SpotlightCard = ({
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
+
+  const Component = as;
 
   return (
     <Component
@@ -369,9 +370,11 @@ const Typewriter = ({ words }) => {
     }
 
     if (subIndex === 0 && reverse) {
-      setReverse(false);
-      setIndex((prev) => (prev + 1) % words.length);
-      return;
+      const timeout = setTimeout(() => {
+        setReverse(false);
+        setIndex((prev) => (prev + 1) % words.length);
+      }, 0);
+      return () => clearTimeout(timeout);
     }
 
     const timeout = setTimeout(
@@ -920,16 +923,17 @@ const PullToRefresh = () => {
   const [icon, setIcon] = useState("chevron"); // 'chevron' or 'spinner'
   const [rotation, setRotation] = useState(0);
 
-  const state = useRef({
+  const stateRef = useRef({
     isPulling: false,
     pullDistance: 0,
     startY: 0,
     threshold: 100,
-  }).current;
+  });
 
   useEffect(() => {
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (!isTouch) return;
+    const state = stateRef.current;
 
     const handleTouchStart = (e) => {
       if (window.scrollY === 0) {
@@ -984,7 +988,7 @@ const PullToRefresh = () => {
       window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("touchcancel", handleTouchEnd);
     };
-  }, [state]);
+  }, []);
 
   return (
     <div
@@ -1522,15 +1526,21 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
 
   useEffect(() => {
     if (loading) {
-      setShowSkeleton(true);
-      setIsFadingOut(false);
+      const timer = setTimeout(() => {
+        setShowSkeleton(true);
+        setIsFadingOut(false);
+      }, 0);
+      return () => clearTimeout(timer);
     } else {
-      setIsFadingOut(true);
+      const immediateTimer = setTimeout(() => setIsFadingOut(true), 0);
       const timer = setTimeout(() => {
         setShowSkeleton(false);
         setIsFadingOut(false);
       }, 500);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(immediateTimer);
+        clearTimeout(timer);
+      };
     }
   }, [loading]);
 
@@ -1646,24 +1656,28 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                       "bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                     }`}>
                     <div className="absolute bottom-0 left-0 right-0 h-1.5 flex items-end gap-0.5 opacity-60 px-3">
-                      {Array.from({ length: 40 }).map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex-1 rounded-t-sm ${
-                            theme === "cyberpunk"
-                              ? "bg-[#00f3ff] animate-equalizer"
-                              : theme === "retro"
-                              ? "bg-[#00ff00] animate-equalizer"
-                              : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
-                          }`}
-                          style={{
-                            animationDuration: (theme === "cyberpunk" || theme === "retro")
-                              ? `${0.4 + Math.random() * 0.6}s`
-                              : `${0.4 + Math.random() * 0.6}s, 3s`,
-                            animationDelay: `${Math.random() * 0.5}s`,
-                          }}
-                        />
-                      ))}
+                      {Array.from({ length: 40 }).map((_, idx) => {
+                        const rand1 = Math.abs(Math.sin(idx * 12.9898));
+                        const rand2 = Math.abs(Math.cos(idx * 4.1414));
+                        return (
+                          <div
+                            key={idx}
+                            className={`flex-1 rounded-t-sm ${
+                              theme === "cyberpunk"
+                                ? "bg-[#00f3ff] animate-equalizer"
+                                : theme === "retro"
+                                ? "bg-[#00ff00] animate-equalizer"
+                                : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
+                            }`}
+                            style={{
+                              animationDuration: (theme === "cyberpunk" || theme === "retro")
+                                ? `${0.4 + rand1 * 0.6}s`
+                                : `${0.4 + rand1 * 0.6}s, 3s`,
+                              animationDelay: `${rand2 * 0.5}s`,
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                     <div className="shrink-0 w-12 h-12 rounded overflow-hidden bg-slate-200 dark:bg-slate-700 relative z-10">
                       <img
@@ -1731,24 +1745,28 @@ const MusicStatsModal = ({ onClose, theme, stats, loading, isRefreshing }) => {
                         >
                           {isNowPlaying && (
                             <div className="absolute bottom-0 left-0 right-0 h-1.5 flex items-end gap-0.5 opacity-60 px-3">
-                              {Array.from({ length: 40 }).map((_, idx) => (
-                                <div
-                                  key={idx}
-                                  className={`flex-1 rounded-sm ${
-                                    theme === "cyberpunk"
-                                      ? "bg-[#00f3ff] animate-equalizer"
-                                      : theme === "retro"
-                                      ? "bg-[#00ff00] animate-equalizer"
-                                      : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
-                                  }`}
-                                  style={{
-                                    animationDuration: (theme === "cyberpunk" || theme === "retro")
-                                      ? `${0.4 + Math.random() * 0.6}s`
-                                      : `${0.4 + Math.random() * 0.6}s, 3s`,
-                                    animationDelay: `${Math.random() * 0.5}s`,
-                                  }}
-                                />
-                              ))}
+                              {Array.from({ length: 40 }).map((_, idx) => {
+                                const rand1 = Math.abs(Math.sin(idx * 12.9898));
+                                const rand2 = Math.abs(Math.cos(idx * 4.1414));
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`flex-1 rounded-sm ${
+                                      theme === "cyberpunk"
+                                        ? "bg-[#00f3ff] animate-equalizer"
+                                        : theme === "retro"
+                                        ? "bg-[#00ff00] animate-equalizer"
+                                        : "bg-gradient-to-t from-blue-600 via-purple-500 to-blue-600 bg-[length:200%_200%] animate-equalizer-gradient"
+                                    }`}
+                                    style={{
+                                      animationDuration: (theme === "cyberpunk" || theme === "retro")
+                                        ? `${0.4 + rand1 * 0.6}s`
+                                        : `${0.4 + rand1 * 0.6}s, 3s`,
+                                      animationDelay: `${rand2 * 0.5}s`,
+                                    }}
+                                  />
+                                );
+                              })}
                             </div>
                           )}
                           <div className="shrink-0 w-10 h-10 rounded overflow-hidden bg-slate-200 dark:bg-slate-700 relative z-10">
@@ -2137,7 +2155,7 @@ export default function Portfolio() {
     sections.forEach((section) => section && observer.observe(section));
     return () =>
       sections.forEach((section) => section && observer.unobserve(section));
-  }, []);
+  });
 
   const toggleJob = (id) => {
     triggerHaptic();

@@ -1,11 +1,11 @@
 {
   "personalInfo": {
     "name": "Jacob Benjamin",
-    "title": "Technical Program Manager & Low-Code Expert",
+    "title": "Technical Delivery Manager",
     "location": "Marshall, VA",
     "phone": "(540) 270-3664",
     "email": "jacobbrianbenjamin@gmail.com",
-    "summary": "Technical Program Manager & Low-Code Expert holding PMP, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M+ program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142K labor cost reduction, a $600K+ profit increase, and significant NPS improvements.",
+    "summary": "Technical Delivery Manager holding PMP, Appian Certified Lead Developer, and Security+. Combines strategic leadership of a $70M+ program with hands-on expertise in Appian, Salesforce, OneStream, Docusign, and Agile methodologies. Specialized in leading digital transformation efforts that modernized legacy DoD systems, resulting in an annual $142K labor cost reduction, a $600K+ profit increase, and significant NPS improvements.",
     "expertise": [
       "Technical Program Management",
       "Agile SDLC",
@@ -22,9 +22,20 @@
   "experience": [
     {
       "id": 1,
-      "company": "MANTECH",
+      "company": "Appian",
+      "role": "Technical Delivery Manager",
+      "period": "Jun 2025 - Present",
+      "type": "McLean, VA",
+      "project": "TBD",
+      "details": [
+        "TBD"
+      ]
+    },
+    {
+      "id": 2,
+      "company": "Mantech",
       "role": "Program Manager",
-      "period": "Jan 2025 - Present",
+      "period": "Jan 2025 - May 2026",
       "type": "Arlington, VA",
       "project": "Army – Resource Manager's Workspace (RMW) & Installation Resource Integration Tool (IRIT)",
       "details": [
@@ -37,8 +48,8 @@
       ]
     },
     {
-      "id": 2,
-      "company": "MANTECH",
+      "id": 3,
+      "company": "Mantech",
       "role": "Deputy Project Manager",
       "period": "Jan 2024 - Jan 2025",
       "type": "Washington, D.C.",
@@ -52,8 +63,8 @@
       ]
     },
     {
-      "id": 3,
-      "company": "MANTECH (formerly Definitive Logic)",
+      "id": 4,
+      "company": "Mantech (formerly Definitive Logic)",
       "role": "Lead Software Engineer",
       "period": "Oct 2022 - Dec 2023",
       "type": "Arlington, VA",
@@ -66,7 +77,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 5,
       "company": "Nuvitek",
       "role": "Appian Developer",
       "period": "Aug 2022 - Oct 2022",
@@ -80,7 +91,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "company": "Nuvitek",
       "role": "Appian Developer",
       "period": "Aug 2021 - Aug 2022",
@@ -95,7 +106,7 @@
       ]
     },
     {
-      "id": 6,
+      "id": 7,
       "company": "REI Systems",
       "role": "Technology Consultant",
       "period": "Aug 2020 - Aug 2021",
@@ -110,7 +121,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 8,
       "company": "Groundswell (formerly Collabralink)",
       "role": "Consultant - Appian Consultant",
       "period": "Jul 2019 - Aug 2020",
@@ -189,6 +200,11 @@
     {
       "name": "Professional Scrum Master (PSM)",
       "logo": "psm.png",
+      "category": "Management & Methodology"
+    },
+    {
+      "name": "APMP Bid and Proposal Management Foundation",
+      "logo": "apmp.png",
       "category": "Management & Methodology"
     },
     {
