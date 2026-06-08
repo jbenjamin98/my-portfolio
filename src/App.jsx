@@ -2871,8 +2871,7 @@ export default function Portfolio() {
                   {personalInfo.name}
                 </h1>
                 <p className="text-xl text-slate-600 dark:text-slate-300">
-                  <span className="block sm:inline">{personalInfo.title.split(" & ")[0]}</span>
-                  <span className="block sm:inline"> & {personalInfo.title.split(" & ")[1]}</span>
+                  <span className="block sm:inline">{personalInfo.title}</span>
                 </p>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-6 mt-2">
                   <a
